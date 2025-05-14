@@ -1,0 +1,309 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+}
+
+enum InvoiceStatus {
+  PAID
+  PENDING
+}
+
+enum OrderStatus {
+  PENDING
+  IN_PRODUCTION
+  COMPLETED
+  CANCELED
+}
+
+enum Role {
+  SYSTEM_ADMIN
+  ADMIN
+  FACTORY_MANAGER
+  INVENTORY_MANAGER
+  SALES
+  DESIGN
+  ACCOUNTING
+  PRODUCTION_STAFF
+  CUSTOMER
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  address       String?
+  emailVerified DateTime?
+  image         String?
+  password      String? // optional for social logins
+  role          Role      @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts    Account[]
+  sessions    Session[]
+  notes       Note[]
+  attachments Attachment[]
+  invoices    Invoice[]
+  orderItems  OrderItem[]  @relation("AssignedItems")
+}
+
+model Customer {
+  id      String   @id @default(uuid())
+  name    String
+  email   String?  @unique
+  phone   String?
+  address Address?
+  orders  Order[]
+}
+
+model Address {
+  id           String  @id @default(uuid())
+  line1        String
+  line2        String?
+  city         String
+  state        String
+  postalCode   String
+  country      String
+  contactName  String
+  contactPhone String
+  instructions String?
+
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId String?   @unique
+
+  order   Order?  @relation("OrderToShippingAddress")
+  orderId String? @unique
+}
+
+model Order {
+  id                String      @id @default(uuid())
+  orderNumber       String      @unique
+  status            OrderStatus
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  estimatedDelivery DateTime
+  actualDelivery    DateTime?
+  metadata          Json?
+
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId String
+
+  shippingAddress   Address? @relation("OrderToShippingAddress", fields: [shippingAddressId], references: [id])
+  shippingAddressId String?  @unique
+
+  items           OrderItem[]
+  payment         Payment?
+  notes           Note[]
+  attachments     Attachment[]
+  events          OrderEvent[]
+  designRevisions DesignRevision[]
+}
+
+model OrderItem {
+  id             String  @id @default(uuid())
+  order          Order   @relation(fields: [orderId], references: [id])
+  orderId        String
+  productId      String
+  quantity       Int
+  unitPrice      Float
+  description    String?
+  specifications Json?
+  status         String
+  assignedTo     User?   @relation("AssignedItems", fields: [assignedToId], references: [id])
+  assignedToId   String?
+  timeline       Json?
+}
+
+model Invoice {
+  id String @id @default(uuid())
+
+  invoiceName   String
+  total         Int
+  status        InvoiceStatus
+  date          DateTime
+  dueDate       Int
+  fromName      String
+  fromEmail     String
+  fromAddress   String
+  clientName    String
+  clientEmail   String
+  clientAddress String
+  currency      String
+  invoiceNumber Int
+  note          String?
+
+  invoiceItemDescription String
+  invoiceItemQuantity    Int
+  invoiceItemRate        Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+}
+
+model Payment {
+  id                 String        @id @default(uuid())
+  order              Order         @relation(fields: [orderId], references: [id])
+  orderId            String        @unique
+  totalAmount        Float
+  tax                Float
+  advancePayment     Float
+  advancePaymentDate DateTime
+  balanceDue         Float
+  paymentStatus      PaymentStatus
+}
+
+model Note {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  order      Order    @relation(fields: [orderId], references: [id])
+  orderId    String
+  createdAt  DateTime @default(now())
+  text       String
+  isInternal Boolean  @default(true)
+}
+
+model Attachment {
+  id         String   @id @default(uuid())
+  fileName   String
+  fileType   String
+  uploadedAt DateTime @default(now())
+  category   String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  order      Order?   @relation(fields: [orderId], references: [id])
+  orderId    String?
+}
+
+model OrderEvent {
+  id        String   @id @default(uuid())
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   String
+  event     String
+  timestamp DateTime @default(now())
+  data      Json
+}
+
+model InventoryItem {
+  id           String                 @id @default(uuid())
+  name         String
+  category     String
+  unit         String
+  currentStock Float
+  reorderPoint Float
+  transactions InventoryTransaction[]
+}
+
+model InventoryTransaction {
+  id         String        @id @default(uuid())
+  material   InventoryItem @relation(fields: [materialId], references: [id])
+  materialId String
+  date       DateTime
+  quantity   Float
+  orderId    String?
+  recordedBy String
+  notes      String?
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  name        String
+  sku         String    @unique
+  description String?
+  price       Float
+  supplierId  String?
+  supplier    Supplier? @relation(fields: [supplierId], references: [id])
+}
+
+model Supplier {
+  id       String    @id @default(uuid())
+  name     String
+  email    String?
+  phone    String?
+  address  String?
+  products Product[]
+}
+
+model Notification {
+  id         String  @id @default(uuid())
+  templateId String
+  channels   String
+  subject    String
+  content    Json
+  status     String
+  userId     String?
+}
+
+model DesignRevision {
+  id        String   @id @default(uuid())
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   String
+  version   Int
+  comment   String?
+  fileUrl   String?
+  createdAt DateTime @default(now())
+}
+
+model WorkStation {
+  id            String   @id @default(uuid())
+  name          String
+  currentLoad   Int
+  assignedTasks Int
+  nextAvailable DateTime
+}
+
+model TaskAssignment {
+  id            String   @id @default(uuid())
+  orderId       String
+  workstationId String
+  assignedAt    DateTime @default(now())
+  status        String
+}
