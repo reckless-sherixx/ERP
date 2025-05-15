@@ -109,12 +109,12 @@ export async function editInvoice(prevState: any, formData: FormData) {
 
   const sender = {
     email: "hello@demomailtrap.com",
-    name: "Jan Marshal",
+    name: "Vidyansh",
   };
 
   emailClient.send({
     from: sender,
-    to: [{ email: "jan@alenix.de" }],
+    to: [{ email: "24155442@kiit.ac.in" }],
     template_uuid: "9d04aa85-6896-48a8-94e9-b54354a48880",
     template_variables: {
       clientName: submission.value.clientName,
@@ -152,7 +152,7 @@ export async function DeleteInvoice(invoiceId: string) {
 export async function MarkAsPaidAction(invoiceId: string) {
   const session = await requireUser();
 
-  const data = await prisma.invoice.update({
+  await prisma.invoice.update({
     where: {
       userId: session.user?.id,
       id: invoiceId,
