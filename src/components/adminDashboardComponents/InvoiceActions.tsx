@@ -47,12 +47,12 @@ export function InvoiceActions({ id, status }: InvoiceActionsProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                    <Link href={`/dashboard/invoices/${id}`}>
+                    <Link href={`/api/v1/dashboard/invoices/${id}`}>
                         <Pencil className="size-4 mr-2" /> Edit Invoice
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                    <Link href={`/api/invoice/${id}`} target="_blank">
+                    <Link href={`/api/v1/invoice/${id}`} target="_blank">
                         <DownloadCloudIcon className="size-4 mr-2" /> Download Invoice
                     </Link>
                 </DropdownMenuItem>
@@ -60,13 +60,13 @@ export function InvoiceActions({ id, status }: InvoiceActionsProps) {
                     <Mail className="size-4 mr-2" /> Reminder Email
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                    <Link href={`/dashboard/invoices/${id}/delete`}>
+                    <Link href={`/api/v1/dashboard/invoices/${id}/delete`}>
                         <Trash className="size-4 mr-2" /> Delete Invoice
                     </Link>
                 </DropdownMenuItem>
                 {status !== "PAID" && (
                     <DropdownMenuItem asChild>
-                        <Link href={`/dashboard/invoices/${id}/paid`}>
+                        <Link href={`/api/v1/dashboard/invoices/${id}/paid`}>
                             <CheckCircle className="size-4 mr-2" /> Mark as Paid
                         </Link>
                     </DropdownMenuItem>
