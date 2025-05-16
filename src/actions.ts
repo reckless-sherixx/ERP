@@ -115,7 +115,7 @@ export async function editInvoice(prevState: any, formData: FormData) {
   emailClient.send({
     from: sender,
     to: [{ email: "24155442@kiit.ac.in" }],
-    template_uuid: "9d04aa85-6896-48a8-94e9-b54354a48880",
+    template_uuid: "4fe3a008-2b4f-4aef-a78f-9ea6e34b0102",
     template_variables: {
       clientName: submission.value.clientName,
       invoiceNumber: submission.value.invoiceNumber,
