@@ -1,42 +1,67 @@
 "use client"
 import { cn } from "@/lib/utils"
+import { Role } from "@prisma/client"
 import { FileDiff, HomeIcon, NotebookText, Users2 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-export const dashboardLinks = [
+const roleBasedLinks: Record<string, Role[]> = {
+    dashboard: [Role.SYSTEM_ADMIN, Role.ADMIN],
+    orders: [Role.SYSTEM_ADMIN, Role.ADMIN, Role.SALES],
+    users: [Role.SYSTEM_ADMIN, Role.ADMIN],
+    invoices: [Role.SYSTEM_ADMIN, Role.ADMIN, Role.ACCOUNTING],
+};
+
+interface DashboardLink {
+    id: number;
+    name: string;
+    href: string;
+    icon: React.ElementType;
+    roles: Role[];
+}
+
+export const dashboardLinks: DashboardLink[] = [
     {
         id: 0,
         name: 'Dashboard',
         href: "/api/v1/dashboard",
         icon: HomeIcon,
+        roles: roleBasedLinks.dashboard,
     },
     {
         id: 2,
         name: 'Orders',
         href: '/api/v1/dashboard/orders',
         icon: NotebookText,
+        roles: roleBasedLinks.orders,
     },
     {
         id: 3,
         name: 'Users',
         href: '/api/v1/dashboard/users',
         icon: Users2,
+        roles: roleBasedLinks.users,
     },
     {
         id: 1,
         name: 'Invoices',
         href: '/api/v1/dashboard/invoices',
         icon: FileDiff,
+        roles: roleBasedLinks.invoices,
     },
 ]
 
-export function DashboardLinks() {
+interface DashboardLinksProps {
+    userRole: Role;
+}
+
+export function DashboardLinks({ userRole }: DashboardLinksProps) {
     const pathname = usePathname();
     return (
         <>
-            {
-                dashboardLinks.map((link) => (
+            {dashboardLinks
+                .filter(link => link.roles.includes(userRole))
+                .map((link) => (
                     <Link
                         className={cn(
                             pathname === link.href

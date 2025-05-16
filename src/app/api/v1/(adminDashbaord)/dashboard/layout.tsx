@@ -17,6 +17,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/app/utils/auth";
 import { Toaster } from "@/components/ui/sonner";
+import { hasAdminDashboardAccess } from "@/app/utils/dashboardAccess";
+import { redirect } from "next/navigation";
+import { Role } from "@/types/roles";
 
 // async function getUser(userId: string) {
 //     const data = await prisma.user.findUnique({
@@ -41,6 +44,9 @@ export default async function DashboardLayout({
     children: ReactNode;
 }) {
     const session = await requireUser();
+    if (!hasAdminDashboardAccess(session.user?.role)) {
+        redirect("/"); // Redirect to home or customer dashboard if unauthorized
+    }
     // const data = await getUser(session.user?.id as string);
     return (
         <>
@@ -57,7 +63,7 @@ export default async function DashboardLayout({
                         </div>
                         <div className="flex-1">
                             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-                                <DashboardLinks />
+                                <DashboardLinks userRole={session.user?.role as Role} />
                             </nav>
                         </div>
                     </div>
@@ -73,7 +79,7 @@ export default async function DashboardLayout({
                             </SheetTrigger>
                             <SheetContent side="left">
                                 <nav className="grid gap-2 mt-10">
-                                    <DashboardLinks />
+                                    <DashboardLinks userRole={session.user?.role as Role} />
                                 </nav>
                             </SheetContent>
                         </Sheet>

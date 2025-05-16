@@ -1,14 +1,19 @@
 import { auth } from "@/app/utils/auth";
 import { redirect } from "next/navigation";
 import LoginForm from "@/components/general/login-form";
+import { hasAdminDashboardAccess } from "../utils/dashboardAccess";
 
-const adminAuthorizedRoles = ['SYSTEM_ADMIN', 'ADMIN', 'SALES']
 
 export default async function Login() {
     const session = await auth();
 
     if (session?.user) {
-        redirect("/api/v1/dashboard");
+        // Check if user has admin dashboard access
+        if (hasAdminDashboardAccess(session.user.role)) {
+            redirect("/api/v1/dashboard");
+        } else {
+            redirect("/customer-dashboard"); // if user is not any of the authorized roles, then redirect him to customer dashboard 
+        }
     }
     return (
         <>

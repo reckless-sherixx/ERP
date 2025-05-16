@@ -30,7 +30,7 @@ import { formatCurrency } from "@/app/utils/formatCurrency";
 import { Prisma } from "@prisma/client";
 
 interface EditInvoiceProps {
-    data: Prisma.InvoiceGetPayload<{}>;
+    data: Prisma.InvoiceGetPayload<{}>;//get invoice data from prisma
 }
 
 export function EditInvoice({ data }: EditInvoiceProps) {

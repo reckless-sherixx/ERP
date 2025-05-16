@@ -2,12 +2,18 @@ import { CreateInvoice } from "@/components/adminDashboardComponents/CreateInvoi
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/app/utils/auth";
 import { redirect } from "next/navigation";
+import { canCreateInvoice } from "@/app/utils/dashboardAccess";
 
 export default async function InvoiceCreationRoute() {
     const session = await auth();
     
     if (!session?.user) {
         redirect("/login");
+    }
+
+    // Check if user has permission to create invoices
+    if (!canCreateInvoice(session.user.role)) {
+        redirect("/api/v1/dashboard");
     }
 
     const data = await prisma.user.findUnique({
