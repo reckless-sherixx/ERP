@@ -1,12 +1,16 @@
 "use server"
 import { requireUser } from "@/app/utils/hooks";
-import { invoiceSchema } from "@/app/utils/zodSchemas";
+import { invoiceSchema, orderSchema } from "@/app/utils/zodSchemas";
 import { parseWithZod } from "@conform-to/zod";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { emailClient } from "./app/utils/mailtrap";
 import { formatCurrency } from "./app/utils/formatCurrency";
+import { revalidatePath } from "next/cache";
+import { OrderStatus } from "@prisma/client";
 
+
+//Invoice Actions
 export async function createInvoice(prevState: any, formData: FormData) {
   const session = await requireUser();
 
@@ -163,4 +167,71 @@ export async function MarkAsPaidAction(invoiceId: string) {
   });
 
   return redirect("/api/v1/dashboard/invoices");
+}
+
+
+//Order Actions
+export async function createOrder(prevState: any, formData: FormData) {
+  await requireUser();
+
+  const submission = parseWithZod(formData, {
+    schema: orderSchema,
+  });
+
+  if (submission.status !== "success") {
+    return submission.reply();
+  }
+
+  const orderCount = await prisma.order.count();
+  const orderNumber = `ORD-${new Date().getFullYear()}-${(orderCount + 1)
+    .toString()
+    .padStart(4, "0")}`;
+
+  const order = await prisma.order.create({
+    data: {
+      orderNumber,
+      status: "PENDING",
+      estimatedDelivery: submission.value.estimatedDelivery,
+      customer: {
+        create: {
+          name: submission.value.customerName,
+          email: submission.value.customerEmail,
+          phone: submission.value.customerPhone,
+          address: {
+            create: submission.value.address,            
+          }
+        }
+      }
+    }
+  });
+
+  revalidatePath("/api/v1/dashboard/orders");
+  return redirect("/api/v1/dashboard/orders");
+}
+
+export async function updateOrderStatus(orderId: string, status: OrderStatus) {
+  await requireUser();
+
+  await prisma.order.update({
+    where: {
+      id: orderId,
+    },
+    data: {
+      status
+    }
+  });
+
+  revalidatePath("/api/v1/dashboard/orders");
+}
+
+export async function deleteOrder(orderId: string) {
+  await requireUser();
+
+  await prisma.order.delete({
+    where: {
+      id: orderId,
+    }
+  });
+
+  revalidatePath("/api/v1/dashboard/orders");
 }

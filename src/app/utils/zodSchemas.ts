@@ -25,3 +25,31 @@ export const invoiceSchema = z.object({
     invoiceItemQuantity: z.number().min(1, "Qunatity min 1"),
     invoiceItemRate: z.number().min(1, "Rate min 1"),
 });
+
+//Order Schema 
+
+const orderItemSchema = z.object({
+    productId: z.string().min(1, "Product ID is required"),
+    quantity: z.number().min(1, "Quantity must be at least 1"),
+    unitPrice: z.number().min(0, "Price cannot be negative"),
+    description: z.string().optional(),
+});
+
+export const orderSchema = z.object({
+    customerName: z.string().min(2, "Name must be at least 2 characters"),
+    customerEmail: z.string().email("Invalid email address"),
+    customerPhone: z.string().min(10, "Phone number must be at least 10 digits"),
+    address: z.object({
+        line1: z.string().min(1, "Address line 1 is required"),
+        line2: z.string().optional(),
+        city: z.string().min(1, "City is required"),
+        state: z.string().min(1, "State is required"),
+        postalCode: z.string().min(1, "Postal code is required"),
+        country: z.string().min(1, "Country is required"),
+    }),
+    estimatedDelivery: z.date({
+        required_error: "Estimated delivery date is required",
+    }),
+    items: z.array(orderItemSchema).min(1, "At least one item is required"),
+    note: z.string().optional(),
+});
