@@ -61,7 +61,7 @@ export function CreateInvoice({
     const calculateTotal = (Number(quantity) || 0) * (Number(rate) || 0);
 
     const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("en-IN", {
         timeZone: 'UTC',
         dateStyle: "long",
     }).format(date);

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { DashboardBlocks } from "@/components/adminDashboardComponents/DashboardBlocks";
-import { EmptyState } from "@/components/adminDashboardComponents/EmptyState";
+import { EmptyState } from "@/components/general/EmptyState";
 
 
 

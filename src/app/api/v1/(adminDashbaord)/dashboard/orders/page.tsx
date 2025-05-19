@@ -6,28 +6,25 @@ import { PlusIcon } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
-export default function ordersPage() {
-    return (
-        <>
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="text-2xl font-bold">Orders</CardTitle>
-                            <CardDescription>Manage your orders right here</CardDescription>
-                        </div>
-                        <Link href="/api/v1/dashboard/orders/create" className={buttonVariants()}>
-                            <PlusIcon /> Create Order
-                        </Link>
+export default function OrderPage(){
+    return(
+        <Card>
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <CardTitle className="text-2xl font-bold">Orders</CardTitle>
+                        <CardDescription>Manage your orders right here</CardDescription>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <Suspense fallback={<Skeleton className="w-full h-[500px]" />}>
-                        <OrderList />
-                    </Suspense>
-                </CardContent>
-            </Card>
-
-        </>
+                    <Link href="/api/v1/dashboard/orders/create" className={buttonVariants()}>
+                        <PlusIcon /> Create Order
+                    </Link>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Suspense fallback={<Skeleton className="w-full h-[500px]" />}>
+                    <OrderList />
+                </Suspense>
+            </CardContent>
+        </Card>
     )
 }

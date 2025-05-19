@@ -1,8 +1,3 @@
-import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "./EmptyState";
-import { OrderActions } from "./OrderActions";
-import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/app/utils/hooks";
 import {
     Table,
     TableBody,
@@ -11,18 +6,27 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/app/utils/hooks";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "../general/EmptyState";
+import { OrderActions } from "./OrderActions";
 
 async function getData() {
-    const data = await prisma.order.findMany({
+    const orders = await prisma.order.findMany({
         include: {
             customer: true,
+            items: true,
         },
         orderBy: {
             createdAt: "desc",
         },
     });
 
-    return data;
+    return orders;
+}
+function calculateOrderTotal(items: any[]) {
+    return items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
 }
 
 export async function OrderList() {
@@ -43,9 +47,10 @@ export async function OrderList() {
                         <TableRow>
                             <TableHead>Order Number</TableHead>
                             <TableHead>Customer</TableHead>
+                            <TableHead>Items</TableHead>
+                            <TableHead>Total Amount</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Created Date</TableHead>
-                            <TableHead>Est. Delivery</TableHead>
+                            <TableHead>Created At</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -54,23 +59,20 @@ export async function OrderList() {
                             <TableRow key={order.id}>
                                 <TableCell>{order.orderNumber}</TableCell>
                                 <TableCell>{order.customer.name}</TableCell>
+                                <TableCell>{order.items.length} items</TableCell>
                                 <TableCell>
-                                    <Badge>{order.status}</Badge>
+                                    ${calculateOrderTotal(order.items).toFixed(2)}
+                                </TableCell>
+                                <TableCell>
+                                    <OrderActions status={order.status} id={order.id} />
                                 </TableCell>
                                 <TableCell>
                                     {new Intl.DateTimeFormat("en-IN", {
-                                        timeZone: 'UTC',
                                         dateStyle: "medium",
-                                    }).format(new Date(order.createdAt))}
-                                </TableCell>
-                                <TableCell>
-                                    {new Intl.DateTimeFormat("en-IN", {
-                                        timeZone: 'UTC',
-                                        dateStyle: "medium",
-                                    }).format(new Date(order.estimatedDelivery))}
+                                    }).format(order.createdAt)}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <OrderActions status={order.status} id={order.id} />
+                                    <OrderActions id={order.id} status={order.status} />
                                 </TableCell>
                             </TableRow>
                         ))}

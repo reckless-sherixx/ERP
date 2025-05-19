@@ -26,15 +26,6 @@ export const invoiceSchema = z.object({
     invoiceItemRate: z.number().min(1, "Rate min 1"),
 });
 
-//Order Schema 
-
-const orderItemSchema = z.object({
-    productId: z.string().min(1, "Product ID is required"),
-    quantity: z.number().min(1, "Quantity must be at least 1"),
-    unitPrice: z.number().min(0, "Price cannot be negative"),
-    description: z.string().optional(),
-});
-
 export const orderSchema = z.object({
     customerName: z.string().min(2, "Name must be at least 2 characters"),
     customerEmail: z.string().email("Invalid email address"),
@@ -45,11 +36,20 @@ export const orderSchema = z.object({
         city: z.string().min(1, "City is required"),
         state: z.string().min(1, "State is required"),
         postalCode: z.string().min(1, "Postal code is required"),
-        country: z.string().min(1, "Country is required"),
+        instructions: z.string().optional(),
     }),
-    estimatedDelivery: z.date({
-        required_error: "Estimated delivery date is required",
+    estimatedDelivery: z.string().datetime({
+        message: "Estimated delivery date is required",
     }),
-    items: z.array(orderItemSchema).min(1, "At least one item is required"),
+    items: z.array(z.object({
+        productId: z.string().min(1, "Product ID is required"),
+        quantity: z.number().min(1, "Quantity must be at least 1"),
+        unitPrice: z.number().min(0, "Price cannot be negative"),
+        description: z.string().optional(),
+        specifications: z.record(z.any()).optional(),
+        assignedToId: z.string().optional(),
+        timeline: z.record(z.any()).optional()
+    })).min(1, "At least one item is required"),
     note: z.string().optional(),
+    status: z.enum(["PENDING", "IN_PRODUCTION", "COMPLETED", "CANCELED"]).default("PENDING")
 });

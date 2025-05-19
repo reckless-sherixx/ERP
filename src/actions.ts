@@ -7,7 +7,8 @@ import { redirect } from "next/navigation";
 import { emailClient } from "./app/utils/mailtrap";
 import { formatCurrency } from "./app/utils/formatCurrency";
 import { revalidatePath } from "next/cache";
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus, Prisma } from "@prisma/client";
+import { canCreateOrder } from "./app/utils/dashboardAccess";
 
 
 //Invoice Actions
@@ -169,10 +170,14 @@ export async function MarkAsPaidAction(invoiceId: string) {
   return redirect("/api/v1/dashboard/invoices");
 }
 
+//OrderActions
 
-//Order Actions
 export async function createOrder(prevState: any, formData: FormData) {
-  await requireUser();
+  const session = await requireUser();
+
+  if (!canCreateOrder(session.user?.role)) {
+    throw new Error("Unauthorized");
+  }
 
   const submission = parseWithZod(formData, {
     schema: orderSchema,
@@ -187,51 +192,128 @@ export async function createOrder(prevState: any, formData: FormData) {
     .toString()
     .padStart(4, "0")}`;
 
-  const order = await prisma.order.create({
-    data: {
-      orderNumber,
-      status: "PENDING",
-      estimatedDelivery: submission.value.estimatedDelivery,
-      customer: {
-        create: {
-          name: submission.value.customerName,
-          email: submission.value.customerEmail,
-          phone: submission.value.customerPhone,
-          address: {
-            create: submission.value.address,            
+  // Prepare the order data
+  const orderData: Prisma.OrderCreateInput = {
+    orderNumber,
+    status: submission.value.status,
+    estimatedDelivery: new Date(submission.value.estimatedDelivery),
+    customer: {
+      create: {
+        name: submission.value.customerName,
+        email: submission.value.customerEmail,
+        phone: submission.value.customerPhone,
+        address: {
+          create: {
+            ...submission.value.address,
           }
         }
       }
+    },
+    items: {
+      create: submission.value.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        description: item.description,
+        specifications: item.specifications,
+        assignedToId: item.assignedToId,
+        timeline: item.timeline
+      })),
+    }
+  };
+
+  // Add optional fields only if they exist
+  if (session.user?.id) {
+    orderData.user = { connect: { id: session.user.id } };
+  }
+
+  if (submission.value.note) {
+    orderData.metadata = { note: submission.value.note };
+  }
+
+  const order = await prisma.order.create({
+    data: orderData,
+    include: {
+      customer: true,
+      items: true,
     }
   });
 
   revalidatePath("/api/v1/dashboard/orders");
   return redirect("/api/v1/dashboard/orders");
 }
+export async function updateOrder(prevState: any, formData: FormData) {
+  const session = await requireUser();
+  const orderId = formData.get("id") as string;
 
-export async function updateOrderStatus(orderId: string, status: OrderStatus) {
-  await requireUser();
+  if (!canCreateOrder(session.user?.role)) {
+    throw new Error("Unauthorized");
+  }
 
-  await prisma.order.update({
-    where: {
-      id: orderId,
-    },
+  const submission = parseWithZod(formData, {
+    schema: orderSchema,
+  });
+
+  if (submission.status !== "success") {
+    return submission.reply();
+  }
+
+  const order = await prisma.order.update({
+    where: { id: orderId },
     data: {
-      status
-    }
+      estimatedDelivery: new Date(submission.value.estimatedDelivery),
+      status: submission.value.status,
+      customer: {
+        update: {
+          name: submission.value.customerName,
+          email: submission.value.customerEmail,
+          phone: submission.value.customerPhone,
+          address: {
+            update: {
+              ...submission.value.address,
+            }
+          }
+        }
+      },
+      items: {
+        deleteMany: {},
+        create: submission.value.items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          description: item.description,
+          specifications: item.specifications,
+          assignedToId: item.assignedToId,
+          timeline: item.timeline
+        })),
+      },
+      metadata: submission.value.note ? { note: submission.value.note } : undefined
+    },
   });
 
   revalidatePath("/api/v1/dashboard/orders");
+  return redirect("/api/v1/dashboard/orders");
 }
 
 export async function deleteOrder(orderId: string) {
-  await requireUser();
+  const session = await requireUser();
 
-  await prisma.order.delete({
-    where: {
-      id: orderId,
-    }
-  });
+  if (!canCreateOrder(session.user?.role)) {
+    throw new Error("Unauthorized");
+  }
+
+  // Delete related records first
+  await prisma.$transaction([
+    // Delete order items
+    prisma.orderItem.deleteMany({
+      where: { orderId }
+    }),
+    // Delete the order
+    prisma.order.delete({
+      where: { id: orderId }
+    })
+  ]);
 
   revalidatePath("/api/v1/dashboard/orders");
+  return redirect("/api/v1/dashboard/orders");
 }
