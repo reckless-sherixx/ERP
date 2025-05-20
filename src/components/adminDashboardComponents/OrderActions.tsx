@@ -1,4 +1,4 @@
-import { deleteOrder } from "@/actions";
+"use client";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -6,60 +6,72 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Trash } from "lucide-react";
+import {
+    CheckCircle,
+    DownloadCloudIcon,
+    Mail,
+    MoreHorizontal,
+    Pencil,
+    Trash,
+} from "lucide-react";
 import Link from "next/link";
-import { OrderStatus } from "@prisma/client";
-import { Badge } from "../ui/badge";
+import { toast } from "sonner";
 
 interface OrderActionsProps {
     id: string;
-    status: OrderStatus;
+    status: string;
 }
-
-function getStatusColor(status: OrderStatus) {
-    switch (status) {
-        case "PENDING":
-            return "bg-yellow-100 text-yellow-800";
-        case "IN_PRODUCTION":
-            return "bg-blue-100 text-blue-800";
-        case "COMPLETED":
-            return "bg-green-100 text-green-800";
-        case "CANCELED":
-            return "bg-red-100 text-red-800";
-        default:
-            return "bg-gray-100 text-gray-800";
-    }
-}
-
 export function OrderActions({ id, status }: OrderActionsProps) {
+    const handleSendReminder = () => {
+        toast.promise(
+            fetch(`/api/email/${id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }),
+            {
+                loading: "Sending reminder email...",
+                success: "Reminder email sent successfully",
+                error: "Failed to send reminder email",
+            }
+        );
+    };
+
     return (
-        <div className="flex items-center gap-2">
-            <Badge className={getStatusColor(status)}>
-                {status.replace("_", " ")}
-            </Badge>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button size="icon" variant="secondary">
+                    <MoreHorizontal className="size-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                    <Link href={`/api/v1/dashboard/orders/${id}`}>
+                        <Pencil className="size-4 mr-2" /> Edit Order
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href={`/api/v1/orders/${id}`} target="_blank">
+                        <DownloadCloudIcon className="size-4 mr-2" /> View Order
+                    </Link>
+                </DropdownMenuItem>
+                {/* <DropdownMenuItem onClick={handleSendReminder}>
+                    <Mail className="size-4 mr-2" /> Reminder Email
+                </DropdownMenuItem> */}
+                <DropdownMenuItem asChild>
+                    <Link href={`/api/v1/dashboard/orders/${id}/delete`}>
+                        <Trash className="size-4 mr-2" /> Delete Order
+                    </Link>
+                </DropdownMenuItem>
+                {status !== "COMPLETED" && (
                     <DropdownMenuItem asChild>
-                        <Link href={`/api/v1/dashboard/orders/${id}/edit`}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Edit
+                        <Link href={`/api/v1/dashboard/invoices/${id}/completed`}>
+                            <CheckCircle className="size-4 mr-2" /> Mark as Completed
                         </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                        className="text-red-600"
-                        onClick={() => deleteOrder(id)}
-                    >
-                        <Trash className="mr-2 h-4 w-4" />
-                        Delete
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }

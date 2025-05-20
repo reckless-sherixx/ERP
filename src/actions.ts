@@ -7,9 +7,7 @@ import { redirect } from "next/navigation";
 import { emailClient } from "./app/utils/mailtrap";
 import { formatCurrency } from "./app/utils/formatCurrency";
 import { revalidatePath } from "next/cache";
-import { OrderStatus, Prisma } from "@prisma/client";
 import { canCreateOrder } from "./app/utils/dashboardAccess";
-
 
 //Invoice Actions
 export async function createInvoice(prevState: any, formData: FormData) {
@@ -171,13 +169,8 @@ export async function MarkAsPaidAction(invoiceId: string) {
 }
 
 //OrderActions
-
 export async function createOrder(prevState: any, formData: FormData) {
   const session = await requireUser();
-
-  if (!canCreateOrder(session.user?.role)) {
-    throw new Error("Unauthorized");
-  }
 
   const submission = parseWithZod(formData, {
     schema: orderSchema,
@@ -192,63 +185,30 @@ export async function createOrder(prevState: any, formData: FormData) {
     .toString()
     .padStart(4, "0")}`;
 
-  // Prepare the order data
-  const orderData: Prisma.OrderCreateInput = {
-    orderNumber,
-    status: submission.value.status,
-    estimatedDelivery: new Date(submission.value.estimatedDelivery),
-    customer: {
-      create: {
-        name: submission.value.customerName,
-        email: submission.value.customerEmail,
-        phone: submission.value.customerPhone,
-        address: {
-          create: {
-            ...submission.value.address,
-          }
-        }
-      }
+  await prisma.order.create({
+    data: {
+      orderNumber,
+      customerAddress: submission.value.customerAddress,
+      customerEmail: submission.value.customerEmail,
+      customerName: submission.value.customerName,
+      customerPhone: submission.value.customerPhone,
+      estimatedDelivery: submission.value.estimatedDelivery,
+      itemDescription: submission.value.itemDescription,
+      itemQuantity: submission.value.itemQuantity,
+      itemRate: submission.value.itemRate,
+      status: submission.value.status,
+      productId: submission.value.productId,
+      totalPrice: submission.value.totalPrice,
+      note: submission.value.note,
+      userId: session.user?.id,
+
     },
-    items: {
-      create: submission.value.items.map((item) => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        description: item.description,
-        specifications: item.specifications,
-        assignedToId: item.assignedToId,
-        timeline: item.timeline
-      })),
-    }
-  };
-
-  // Add optional fields only if they exist
-  if (session.user?.id) {
-    orderData.user = { connect: { id: session.user.id } };
-  }
-
-  if (submission.value.note) {
-    orderData.metadata = { note: submission.value.note };
-  }
-
-  const order = await prisma.order.create({
-    data: orderData,
-    include: {
-      customer: true,
-      items: true,
-    }
   });
-
-  revalidatePath("/api/v1/dashboard/orders");
   return redirect("/api/v1/dashboard/orders");
 }
-export async function updateOrder(prevState: any, formData: FormData) {
-  const session = await requireUser();
-  const orderId = formData.get("id") as string;
 
-  if (!canCreateOrder(session.user?.role)) {
-    throw new Error("Unauthorized");
-  }
+export async function editOrder(prevState: any, formData: FormData) {
+  const session = await requireUser();
 
   const submission = parseWithZod(formData, {
     schema: orderSchema,
@@ -258,62 +218,39 @@ export async function updateOrder(prevState: any, formData: FormData) {
     return submission.reply();
   }
 
-  const order = await prisma.order.update({
-    where: { id: orderId },
+  await prisma.order.update({
+    where: {
+      id: formData.get("id") as string,
+      userId: session.user?.id,
+    },
     data: {
-      estimatedDelivery: new Date(submission.value.estimatedDelivery),
+      customerAddress: submission.value.customerAddress,
+      customerEmail: submission.value.customerEmail,
+      customerName: submission.value.customerName,
+      customerPhone: submission.value.customerPhone,
+      estimatedDelivery: submission.value.estimatedDelivery,
+      itemDescription: submission.value.itemDescription,
+      itemQuantity: submission.value.itemQuantity,
+      itemRate: submission.value.itemRate,
       status: submission.value.status,
-      customer: {
-        update: {
-          name: submission.value.customerName,
-          email: submission.value.customerEmail,
-          phone: submission.value.customerPhone,
-          address: {
-            update: {
-              ...submission.value.address,
-            }
-          }
-        }
-      },
-      items: {
-        deleteMany: {},
-        create: submission.value.items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          description: item.description,
-          specifications: item.specifications,
-          assignedToId: item.assignedToId,
-          timeline: item.timeline
-        })),
-      },
-      metadata: submission.value.note ? { note: submission.value.note } : undefined
+      productId: submission.value.productId,
+      totalPrice: submission.value.totalPrice,
+      note: submission.value.note,
+      userId: session.user?.id,
     },
   });
-
-  revalidatePath("/api/v1/dashboard/orders");
   return redirect("/api/v1/dashboard/orders");
 }
 
-export async function deleteOrder(orderId: string) {
+export async function DeleteOrder(orderId: string) {
   const session = await requireUser();
 
-  if (!canCreateOrder(session.user?.role)) {
-    throw new Error("Unauthorized");
-  }
+  await prisma.order.delete({
+    where: {
+      userId: session.user?.id,
+      id: orderId,
+    },
+  });
 
-  // Delete related records first
-  await prisma.$transaction([
-    // Delete order items
-    prisma.orderItem.deleteMany({
-      where: { orderId }
-    }),
-    // Delete the order
-    prisma.order.delete({
-      where: { id: orderId }
-    })
-  ]);
-
-  revalidatePath("/api/v1/dashboard/orders");
   return redirect("/api/v1/dashboard/orders");
 }

@@ -27,29 +27,17 @@ export const invoiceSchema = z.object({
 });
 
 export const orderSchema = z.object({
-    customerName: z.string().min(2, "Name must be at least 2 characters"),
-    customerEmail: z.string().email("Invalid email address"),
-    customerPhone: z.string().min(10, "Phone number must be at least 10 digits"),
-    address: z.object({
-        line1: z.string().min(1, "Address line 1 is required"),
-        line2: z.string().optional(),
-        city: z.string().min(1, "City is required"),
-        state: z.string().min(1, "State is required"),
-        postalCode: z.string().min(1, "Postal code is required"),
-        instructions: z.string().optional(),
-    }),
-    estimatedDelivery: z.string().datetime({
-        message: "Estimated delivery date is required",
-    }),
-    items: z.array(z.object({
-        productId: z.string().min(1, "Product ID is required"),
-        quantity: z.number().min(1, "Quantity must be at least 1"),
-        unitPrice: z.number().min(0, "Price cannot be negative"),
-        description: z.string().optional(),
-        specifications: z.record(z.any()).optional(),
-        assignedToId: z.string().optional(),
-        timeline: z.record(z.any()).optional()
-    })).min(1, "At least one item is required"),
-    note: z.string().optional(),
-    status: z.enum(["PENDING", "IN_PRODUCTION", "COMPLETED", "CANCELED"]).default("PENDING")
+    customerName: z.string().min(1, "Client name is required"),
+    customerPhone: z.string().min(1, "Enter a valid mobile number"),
+    customerEmail: z.string().email("Invalid Email address"),
+    customerAddress: z.string().min(1, "Client address is required"),
+    totalPrice: z.number().min(1, "1₹ is minimum"),
+    status: z.enum(["PENDING", "IN_PRODUCTION", "COMPLETED", "CANCELED"]).default("PENDING"),
+    productId:z.string().min(1,"Product Id required"),
+    itemDescription: z.string().min(1, "Description is required"),
+    itemQuantity: z.number().min(1, "Quantity min 1"),
+    itemRate: z.number().min(1, "Rate min 1"),
+    estimatedDelivery: z.string().min(1, "Date is required"),
+    note: z.string().optional(),    
 });
+

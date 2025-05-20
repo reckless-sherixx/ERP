@@ -53,7 +53,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
     const [quantity, setQuantity] = useState(data.invoiceItemQuantity.toString());
     const [currency, setCurrency] = useState(data.currency);
 
-    const calcualteTotal = (Number(quantity) || 0) * (Number(rate) || 0);
+    const calculateTotal = (Number(quantity) || 0) * (Number(rate) || 0);
     return (
         <Card className="w-full max-w-4xl mx-auto">
             <CardContent className="p-6">
@@ -69,7 +69,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                     <input
                         type="hidden"
                         name={fields.total.name}
-                        value={calcualteTotal}
+                        value={calculateTotal}
                     />
 
                     <div className="flex flex-col gap-1 w-fit mb-6">
@@ -296,7 +296,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                             <div className="col-span-2">
                                 <Input
                                     value={formatCurrency({
-                                        amount: calcualteTotal,
+                                        amount: calculateTotal,
                                         currency: currency as any,
                                     })}
                                     disabled
@@ -311,7 +311,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                                 <span>Subtotal</span>
                                 <span>
                                     {formatCurrency({
-                                        amount: calcualteTotal,
+                                        amount: calculateTotal,
                                         currency: currency as any,
                                     })}
                                 </span>
@@ -320,7 +320,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                                 <span>Total ({currency})</span>
                                 <span className="font-medium underline underline-offset-2">
                                     {formatCurrency({
-                                        amount: calcualteTotal,
+                                        amount: calculateTotal,
                                         currency: currency as any,
                                     })}
                                 </span>

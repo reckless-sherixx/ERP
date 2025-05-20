@@ -6,32 +6,36 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { OrderActions } from "./OrderActions";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/app/utils/hooks";
+import { formatCurrency } from "@/app/utils/formatCurrency";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "../general/EmptyState";
-import { OrderActions } from "./OrderActions";
 
-async function getData() {
-    const orders = await prisma.order.findMany({
-        include: {
-            customer: true,
-            items: true,
+async function getData(userId: string) {
+    const data = await prisma.order.findMany({
+        where: {
+            userId: userId,
+        },
+        select: {
+            id: true,
+            customerName: true,
+            totalPrice: true,
+            createdAt: true,
+            status: true,
+            orderNumber: true,
         },
         orderBy: {
             createdAt: "desc",
         },
     });
 
-    return orders;
+    return data;
 }
-function calculateOrderTotal(items: any[]) {
-    return items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-}
-
 export async function OrderList() {
-    const data = await getData();
-
+    const session = await requireUser();
+    const data = await getData(session.user?.id as string);
     return (
         <>
             {data.length === 0 ? (
@@ -45,34 +49,36 @@ export async function OrderList() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Order Number</TableHead>
+                            <TableHead>Order ID</TableHead>
                             <TableHead>Customer</TableHead>
-                            <TableHead>Items</TableHead>
-                            <TableHead>Total Amount</TableHead>
+                            <TableHead>Amount</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Created At</TableHead>
+                            <TableHead>Date</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {data.map((order) => (
                             <TableRow key={order.id}>
-                                <TableCell>{order.orderNumber}</TableCell>
-                                <TableCell>{order.customer.name}</TableCell>
-                                <TableCell>{order.items.length} items</TableCell>
+                                <TableCell>#{order.orderNumber}</TableCell>
+                                <TableCell>{order.customerName}</TableCell>
                                 <TableCell>
-                                    ${calculateOrderTotal(order.items).toFixed(2)}
+                                    {formatCurrency({
+                                        amount: order.totalPrice,
+                                        currency: "INR",
+                                    })}
                                 </TableCell>
                                 <TableCell>
-                                    <OrderActions status={order.status} id={order.id} />
+                                    <Badge>{order.status}</Badge>
                                 </TableCell>
                                 <TableCell>
                                     {new Intl.DateTimeFormat("en-IN", {
+                                        timeZone: 'UTC',
                                         dateStyle: "medium",
-                                    }).format(order.createdAt)}
+                                    }).format(new Date(order.createdAt))}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <OrderActions id={order.id} status={order.status} />
+                                    <OrderActions status={order.status} id={order.id} />
                                 </TableCell>
                             </TableRow>
                         ))}

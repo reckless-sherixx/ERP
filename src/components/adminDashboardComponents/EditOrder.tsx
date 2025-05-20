@@ -12,18 +12,22 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon, PlusIcon, TrashIcon } from "lucide-react";
-import { useActionState, useState } from "react"; ``
+import { CalendarIcon } from "lucide-react";
 import { SubmitButton } from "../general/SubmitButton";
-import { createOrder } from "../../actions";
+import { useActionState, useState } from "react";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { orderSchema } from "@/app/utils/zodSchemas";
+import { editOrder } from '@/actions';
 import { formatCurrency } from "@/app/utils/formatCurrency";
+import { Prisma } from "@prisma/client";
 
+interface EditOrderProps {
+    data: Prisma.OrderGetPayload<{}>;//get order data from prisma
+}
 
-export function CreateOrder() {
-    const [lastResult, action] = useActionState(createOrder, undefined);
+export function EditOrder({ data }: EditOrderProps) {
+    const [lastResult, action] = useActionState(editOrder, undefined);
     const [form, fields] = useForm({
         lastResult,
 
@@ -37,44 +41,41 @@ export function CreateOrder() {
         shouldRevalidate: "onInput",
     });
 
-    const [selectedDate, setSelectedDate] = useState(new Date());
-    const [rate, setRate] = useState("");
-    const [quantity, setQuantity] = useState("");
-    const [productId, setProductId] = useState("");
+    const [selectedDate, setSelectedDate] = useState(data.estimatedDelivery);
+    const [rate, setRate] = useState(data.itemRate.toString());
+    const [quantity, setQuantity] = useState(data.itemQuantity.toString());
+    const [productId, setProductId] = useState(data.productId?.toString());
 
     const calculateTotal = (Number(quantity) || 0) * (Number(rate) || 0);
-
-    const formatDate = (date: Date) => {
-        return new Intl.DateTimeFormat("en-IN", {
-            timeZone: 'UTC',
-            dateStyle: "long",
-        }).format(date);
-    };
-
     return (
         <Card className="w-full max-w-4xl mx-auto">
             <CardContent className="p-6">
                 <form id={form.id} action={action} onSubmit={form.onSubmit} noValidate>
                     <input
                         type="hidden"
-                        name="estimatedDelivery"
-                        value={selectedDate.toISOString()}
+                        name={fields.estimatedDelivery.name}
+                        value={selectedDate?.toISOString()}
                     />
+                    {/* sending id with the formData */}
+                    <input type="hidden" name="id" value={data.id} />
+
                     <input
                         type="hidden"
-                        name="totalPrice"
+                        name={fields.totalPrice.name}
                         value={calculateTotal}
                     />
-                    <div className="flex gap-1 w-fit mb-6">
-                        <Badge variant="secondary">New Order</Badge>
+
+                    <div className="flex flex-col gap-1 w-fit mb-6">
+                        <Badge variant="secondary">Edit Order</Badge>
                     </div>
-                    {/* Customer Information */}
                     <div className="flex pt-2">
                         <div className="grid md:grid-cols-2 gap-6 mb-6">
                             <div className="space-y-2">
                                 <Label>Customer Name</Label>
                                 <Input
                                     name={fields.customerName.name}
+                                    key={fields.customerName.key}
+                                    defaultValue={data.customerName}
                                     placeholder="Customer Name"
                                 />
                                 <p className="text-red-500 text-sm">{fields.customerName.errors}</p>
@@ -82,7 +83,8 @@ export function CreateOrder() {
                                 <Label>Customer Email</Label>
                                 <Input
                                     name={fields.customerEmail.name}
-                                    type="email"
+                                    key={fields.customerEmail.key}
+                                    defaultValue={data.customerEmail ?? ""}
                                     placeholder="customer@example.com"
                                 />
                                 <p className="text-red-500 text-sm">{fields.customerEmail.errors}</p>
@@ -95,12 +97,16 @@ export function CreateOrder() {
                                 <Label>Customer Phone</Label>
                                 <Input
                                     name={fields.customerPhone.name}
+                                    key={fields.customerPhone.key}
+                                    defaultValue={data.customerPhone}
                                     placeholder="Phone Number"
                                 />
                                 <p className="text-red-500 text-sm">{fields.customerPhone.errors}</p>
                                 <Label>Customer Address</Label>
                                 <Input
                                     name={fields.customerAddress.name}
+                                    key={fields.customerAddress.key}
+                                    defaultValue={data.customerAddress}
                                     placeholder="Customer Address"
                                 />
                                 <p className="text-red-500 text-sm">{fields.customerAddress.errors}</p>
@@ -122,7 +128,9 @@ export function CreateOrder() {
                                         <CalendarIcon />
 
                                         {selectedDate ? (
-                                            formatDate(selectedDate)
+                                            new Intl.DateTimeFormat("en-US", {
+                                                dateStyle: "long",
+                                            }).format(selectedDate)
                                         ) : (
                                             <span>Pick a Date</span>
                                         )}
@@ -130,78 +138,78 @@ export function CreateOrder() {
                                 </PopoverTrigger>
                                 <PopoverContent>
                                     <Calendar
-                                        selected={selectedDate}
+                                        selected={selectedDate || new Date()}
                                         onSelect={(date) => setSelectedDate(date || new Date())}
                                         mode="single"
                                         fromDate={new Date()}
                                     />
                                 </PopoverContent>
                             </Popover>
+                            <p className="text-red-500 text-sm">{fields.estimatedDelivery.errors}</p>
                         </div>
                     </div>
 
-                    {/* Order Items */}
-                        <div>
-                            <div className="grid grid-cols-12 gap-4 mb-2 font-medium">
-                                <p className="col-span-2">Product Id</p>
-                                <p className="col-span-2">Quantity</p>
-                                <p className="col-span-2">Rate</p>
-                                <p className="col-span-6">Description</p>
-                            </div>
+                    <div>
+                        <div className="grid grid-cols-12 gap-4 mb-2 font-medium">
+                            <p className="col-span-2">Product Id</p>
+                            <p className="col-span-2">Quantity</p>
+                            <p className="col-span-2">Rate</p>
+                            <p className="col-span-6">Description</p>
+                        </div>
 
-                            <div className="grid grid-cols-12 gap-4 mb-4">
-                                <div className="col-span-2">
-                                    <Input
-                                        name={fields.productId.name}
-                                        key={fields.productId.key}
-                                        value={productId}
-                                        onChange={(e) => setProductId(e.target.value)}
-                                        type="string"
-                                        placeholder="Enter Product ID"
-                                    />
-                                    <p className="text-red-500 text-sm">
-                                        {fields.productId.errors}
-                                    </p>
-                                </div>
-                                <div className="col-span-2">
-                                    <Input
-                                        name={fields.itemQuantity.name}
-                                        key={fields.itemQuantity.key}
-                                        type="number"
-                                        placeholder="0"
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(e.target.value)}
-                                    />
-                                    <p className="text-red-500 text-sm">
-                                        {fields.itemQuantity.errors}
-                                    </p>
-                                </div>
-                                <div className="col-span-2">
-                                    <Input
-                                        name={fields.itemRate.name}
-                                        key={fields.itemRate.key}
-                                        value={rate}
-                                        onChange={(e) => setRate(e.target.value)}
-                                        type="number"
-                                        placeholder="0"
-                                    />
-                                    <p className="text-red-500 text-sm">
-                                        {fields.itemRate.errors}
-                                    </p>
-                                </div>
-                                <div className="col-span-6">
-                                    <Textarea
-                                        name={fields.itemDescription.name}
-                                        key={fields.itemDescription.key}
-                                        defaultValue={fields.itemDescription.initialValue}
-                                        placeholder="Item name & description"
-                                    />
-                                    <p className="text-red-500 text-sm">
-                                        {fields.itemDescription.errors}
-                                    </p>
-                                </div>
+                        <div className="grid grid-cols-12 gap-4 mb-4">
+                            <div className="col-span-2">
+                                <Input
+                                    name={fields.productId.name}
+                                    key={fields.productId.key}
+                                    value={productId}
+                                    onChange={(e) => setProductId(e.target.value)}
+                                    type="string"
+                                    placeholder="Enter Product ID"
+                                />
+                                <p className="text-red-500 text-sm">
+                                    {fields.productId.errors}
+                                </p>
+                            </div>
+                            <div className="col-span-2">
+                                <Input
+                                    name={fields.itemQuantity.name}
+                                    key={fields.itemQuantity.key}
+                                    type="number"
+                                    placeholder="0"
+                                    value={quantity}
+                                    onChange={(e) => setQuantity(e.target.value)}
+                                />
+                                <p className="text-red-500 text-sm">
+                                    {fields.itemQuantity.errors}
+                                </p>
+                            </div>
+                            <div className="col-span-2">
+                                <Input
+                                    name={fields.itemRate.name}
+                                    key={fields.itemRate.key}
+                                    value={rate}
+                                    onChange={(e) => setRate(e.target.value)}
+                                    type="number"
+                                    placeholder="0"
+                                />
+                                <p className="text-red-500 text-sm">
+                                    {fields.itemRate.errors}
+                                </p>
+                            </div>
+                            <div className="col-span-6">
+                                <Textarea
+                                    name={fields.itemDescription.name}
+                                    key={fields.itemDescription.key}
+                                    defaultValue={data.itemDescription}
+                                    placeholder="Item name & description"
+                                />
+                                <p className="text-red-500 text-sm">
+                                    {fields.itemDescription.errors}
+                                </p>
                             </div>
                         </div>
+                    </div>
                     {/* </div> */}
                     <div className="flex justify-end">
                         <div className="w-1/3">
@@ -230,7 +238,7 @@ export function CreateOrder() {
 
                     <div className="flex items-center justify-end mt-6">
                         <div>
-                            <SubmitButton text="Create Order" />
+                            <SubmitButton text="Edit Order" />
                         </div>
                     </div>
                 </form>

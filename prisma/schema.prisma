@@ -89,73 +89,29 @@ model User {
   sessions    Session[]
   attachments Attachment[]
   invoices    Invoice[]
-  orderItems  OrderItem[]  @relation("AssignedItems")
   Order       Order[]
-}
-
-model Customer {
-  id      String   @id @default(uuid())
-  name    String
-  email   String?  @unique
-  phone   String?
-  address Address?
-  orders  Order[]
-}
-
-model Address {
-  id           String  @id @default(uuid())
-  line1        String
-  line2        String?
-  city         String
-  state        String
-  postalCode   String
-  instructions String?
-
-  customer   Customer? @relation(fields: [customerId], references: [id])
-  customerId String?   @unique
-
-  order   Order?  @relation("OrderToShippingAddress")
-  orderId String? @unique
 }
 
 model Order {
   id                String      @id @default(uuid())
   orderNumber       String      @unique
-  status            OrderStatus
+  customerName      String
+  customerEmail     String?     @unique
+  customerPhone     String
+  customerAddress   String
+  status            OrderStatus @default(PENDING)
+  productId         String?
+  itemQuantity      Int
+  itemRate          Int
+  itemDescription   String
+  totalPrice        Int
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   estimatedDelivery DateTime?
-  actualDelivery    DateTime?
-  metadata          Json?
+  note              String?
 
   user   User?   @relation(fields: [userId], references: [id])
   userId String?
-
-  customer   Customer @relation(fields: [customerId], references: [id])
-  customerId String
-
-  shippingAddress   Address? @relation("OrderToShippingAddress", fields: [shippingAddressId], references: [id])
-  shippingAddressId String?  @unique
-
-  items OrderItem[]
-
-  attachments Attachment[]
-
-  designRevisions DesignRevision[]
-}
-
-model OrderItem {
-  id             String  @id @default(uuid())
-  order          Order   @relation(fields: [orderId], references: [id])
-  orderId        String
-  productId      String
-  quantity       Int
-  unitPrice      Float
-  description    String?
-  specifications Json?
-  assignedTo     User?   @relation("AssignedItems", fields: [assignedToId], references: [id])
-  assignedToId   String?
-  timeline       Json?
 }
 
 model Invoice {
@@ -194,8 +150,6 @@ model Attachment {
   category   String
   user       User     @relation(fields: [userId], references: [id])
   userId     String
-  order      Order?   @relation(fields: [orderId], references: [id])
-  orderId    String?
 }
 
 model InventoryItem {
@@ -250,8 +204,6 @@ model Notification {
 
 model DesignRevision {
   id        String   @id @default(uuid())
-  order     Order    @relation(fields: [orderId], references: [id])
-  orderId   String
   version   Int
   comment   String?
   fileUrl   String?

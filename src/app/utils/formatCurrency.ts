@@ -9,3 +9,10 @@ export function formatCurrency({ amount, currency }: formatCurrencyProps) {
     currency: currency,
   }).format(amount);
 }
+
+interface floatCurrencyProps {
+  amount: number;
+  currency: "INR" | "EUR";
+  minimumFractionDigits?: number;
+  maximumFractionDigits?: number;
+}
