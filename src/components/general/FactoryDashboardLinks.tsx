@@ -1,15 +1,15 @@
 "use client"
 import { cn } from "@/lib/utils"
 import { Role } from "@prisma/client"
-import { FileDiff, HomeIcon, NotebookText, Users2 } from "lucide-react"
+import { HomeIcon, NotebookText, ShoppingCart, Users2 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const roleBasedLinks: Record<string, Role[]> = {
-    dashboard: [Role.SYSTEM_ADMIN, Role.ADMIN , Role.SALES , Role.ACCOUNTING],
-    orders: [Role.SYSTEM_ADMIN, Role.ADMIN, Role.SALES],
-    users: [Role.SYSTEM_ADMIN, Role.ADMIN],
-    invoices: [Role.SYSTEM_ADMIN, Role.ADMIN, Role.ACCOUNTING],
+    dashboard: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER],
+    orders: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER, Role.PRODUCTION_STAFF],
+    users: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER],
+    inventory: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER, Role.INVENTORY_MANAGER],
 };
 
 interface DashboardLink {
@@ -24,30 +24,30 @@ export const dashboardLinks: DashboardLink[] = [
     {
         id: 0,
         name: 'Dashboard',
-        href: "/api/v1/dashboard",
+        href: "/api/v1/factory/dashboard",
         icon: HomeIcon,
         roles: roleBasedLinks.dashboard,
     },
     {
         id: 2,
         name: 'Orders',
-        href: '/api/v1/dashboard/orders',
+        href: '/api/v1/factory/dashboard/orders',
         icon: NotebookText,
         roles: roleBasedLinks.orders,
     },
     {
         id: 3,
-        name: 'Users',
-        href: '/api/v1/dashboard/users',
+        name: 'Staff',
+        href: '/api/v1/factory/dashboard/staff',
         icon: Users2,
-        roles: roleBasedLinks.users,
+        roles: roleBasedLinks.staff,
     },
     {
         id: 1,
-        name: 'Invoices',
-        href: '/api/v1/dashboard/invoices',
-        icon: FileDiff,
-        roles: roleBasedLinks.invoices,
+        name: 'Inventory',
+        href: '/api/v1/dashboard/inventory',
+        icon: ShoppingCart,
+        roles: roleBasedLinks.inventory,
     },
 ]
 
@@ -67,7 +67,7 @@ export function DashboardLinks({ userRole }: DashboardLinksProps) {
                             pathname === link.href
                                 ? "text-primary bg-primary/10"
                                 : "text-muted-foreground hover:text-foreground",
-                            "flex items-center gap-3 rounded-lg px-3 py-3 transition-all hover:text-primary"
+                            "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary"
                         )}
                         href={link.href}
                         key={link.id}

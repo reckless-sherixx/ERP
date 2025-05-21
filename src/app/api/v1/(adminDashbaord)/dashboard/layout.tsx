@@ -28,7 +28,7 @@ export default async function DashboardLayout({
 }) {
     const session = await requireUser();
     if (!hasAdminDashboardAccess(session.user?.role)) {
-        redirect("/"); // Redirect to home or customer dashboard if unauthorized
+        redirect("/customer-dashboard"); // Redirect to home or customer dashboard if unauthorized
     }
     return (
         <>
@@ -60,7 +60,7 @@ export default async function DashboardLayout({
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left">
-                                <nav className="grid gap-2 mt-10">
+                                <nav className="grid gap-2 mt-15">
                                     <DashboardLinks userRole={session.user?.role as Role} />
                                 </nav>
                             </SheetContent>
@@ -84,10 +84,10 @@ export default async function DashboardLayout({
                                         <Link href="/api/v1/dashboard">Dashboard</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/api/v1/orders">Orders</Link>
+                                        <Link href="/api/v1/dashboard/orders">Orders</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/api/v1/Users">Users</Link>
+                                        <Link href="/api/v1/dashboard/Users">Users</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
                                         <Link href="/api/v1/dashboard/invoices">Invoices</Link>

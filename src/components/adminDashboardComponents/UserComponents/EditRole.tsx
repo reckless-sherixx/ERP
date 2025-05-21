@@ -17,6 +17,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Role } from "@prisma/client";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -49,11 +50,12 @@ export function EditRoleModal({
 }: EditRoleModalProps) {
     const [role, setRole] = useState<Role>(currentRole);
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
 
     const handleUpdateRole = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch(`/api/v1/users/${userId}/role`, {
+            const response = await fetch(`/api/v1/dashboard/users/${userId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -61,16 +63,22 @@ export function EditRoleModal({
                 body: JSON.stringify({ role }),
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                throw new Error("Failed to update role");
+                if (response.status === 401) {
+                    // Handle unauthorized - redirect to login
+                    window.location.href = '/login';
+                    return;
+                }
+                throw new Error(data.error || "Failed to update role");
             }
 
             toast.success("Role updated successfully");
             onClose();
-            // Refresh the page to show updated data
-            window.location.reload();
+            router.refresh();
         } catch (error) {
-            toast.error("Failed to update role");
+            toast.error(error instanceof Error ? error.message : "Failed to update role");
         } finally {
             setIsLoading(false);
         }

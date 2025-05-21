@@ -1,3 +1,4 @@
+import { Role } from "@prisma/client";
 import { z } from "zod";
 
 export const onboardingSchema = z.object({
@@ -39,5 +40,23 @@ export const orderSchema = z.object({
     itemRate: z.number().min(1, "Rate min 1"),
     estimatedDelivery: z.string().min(1, "Date is required"),
     note: z.string().optional(),    
+});
+
+// Create a schema for role validation
+export const updateRoleSchema = z.object({
+    role: z.enum([
+        Role.SYSTEM_ADMIN,
+        Role.ADMIN,
+        Role.FACTORY_MANAGER,
+        Role.INVENTORY_MANAGER,
+        Role.DESIGN,
+        Role.PRODUCTION_STAFF,
+        Role.SALES,
+        Role.ACCOUNTING,
+        Role.CUSTOMER
+    ], {
+        required_error: "Role is required",
+        invalid_type_error: "Invalid role type"
+    })
 });
 

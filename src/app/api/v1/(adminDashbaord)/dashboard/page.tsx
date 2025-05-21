@@ -8,6 +8,7 @@ import { InvoiceGraph } from "@/components/adminDashboardComponents/InvoiceCompo
 import { OrderGraph } from "@/components/adminDashboardComponents/OrderComponents/OrderGraph";
 import { RecentInvoices } from "@/components/adminDashboardComponents/InvoiceComponents/RecentInvoice";
 import { canEditInAdminDashboard } from "@/app/utils/dashboardAccess";
+import { RecentOrders } from "@/components/adminDashboardComponents/OrderComponents/RecentOrder";
 
 interface PageProps {
     searchParams: { view?: string }
@@ -42,7 +43,7 @@ export default async function DashboardRoute({ searchParams }: PageProps) {
                         <OrderDashboard />
                         <div className="grid gap-4 lg:grid-cols-3 md:gap-8">
                             <OrderGraph />
-                            {/* Add order-specific components */}
+                            <RecentOrders/>
                         </div>
                     </>
                 )}

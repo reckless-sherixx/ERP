@@ -50,7 +50,7 @@ interface AdminDashboardNavigationDropdownProps {
 export function AdminDashboardNavigationDropdown({ userRole }: AdminDashboardNavigationDropdownProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const currentView = searchParams.get("view") || "orders";
+    const currentView = searchParams.get("view") || "invoices";
     
     const [open, setOpen] = React.useState(false);
 
