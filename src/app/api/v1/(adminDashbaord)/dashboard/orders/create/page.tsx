@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { canCreateOrder } from "@/app/utils/dashboardAccess";
-import { CreateOrder } from "@/components/adminDashboardComponents/CreateOrder";
+import { CreateOrder } from "@/components/adminDashboardComponents/OrderComponents/CreateOrder";
 import { requireUser } from "@/app/utils/hooks";
 
 export default async function OrderCreationRoute() {

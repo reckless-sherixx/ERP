@@ -1,4 +1,4 @@
-import { InvoiceList } from "@/components/adminDashboardComponents/InvoiceList";
+import { InvoiceList } from "@/components/adminDashboardComponents/InvoiceComponents/InvoiceList";
 import { buttonVariants } from "@/components/ui/button";
 import {
     Card,

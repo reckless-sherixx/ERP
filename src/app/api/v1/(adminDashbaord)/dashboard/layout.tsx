@@ -3,7 +3,7 @@ import { requireUser } from "@/app/utils/hooks";
 import Link from "next/link";
 import Logo from "../../../../../../public/logo.png";
 import Image from "next/image";
-import { DashboardLinks } from "@/components/adminDashboardComponents/DashboardLinks";
+import { DashboardLinks } from "@/components/general/DashboardLinks";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu, User2 } from "lucide-react";

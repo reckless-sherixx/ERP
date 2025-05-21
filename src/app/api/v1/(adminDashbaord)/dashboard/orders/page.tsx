@@ -1,4 +1,4 @@
-import { OrderList } from "@/components/adminDashboardComponents/OrderList";
+import { OrderList } from "@/components/adminDashboardComponents/OrderComponents/OrderList";
 import { buttonVariants } from "@/components/ui/button";
 import {
     Card,

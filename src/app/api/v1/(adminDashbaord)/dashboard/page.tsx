@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { DashboardBlocks } from "@/components/adminDashboardComponents/DashboardBlocks";
+import { DashboardBlocks } from "@/components/adminDashboardComponents/InvoiceComponents/DashboardBlocks";
 import { EmptyState } from "@/components/general/EmptyState";
 
 
@@ -7,8 +7,8 @@ import { EmptyState } from "@/components/general/EmptyState";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/app/utils/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
-import { InvoiceGraph } from "@/components/adminDashboardComponents/InvoiceGraph";
-import { RecentInvoices } from "@/components/adminDashboardComponents/RecentInvoice";
+import { InvoiceGraph } from "@/components/adminDashboardComponents/InvoiceComponents/InvoiceGraph";
+import { RecentInvoices } from "@/components/adminDashboardComponents/InvoiceComponents/RecentInvoice";
 
 async function getData(userId: string) {
     const data = await prisma.invoice.findMany({

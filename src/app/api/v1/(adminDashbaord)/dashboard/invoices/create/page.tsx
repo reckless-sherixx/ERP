@@ -1,4 +1,4 @@
-import { CreateInvoice } from "@/components/adminDashboardComponents/CreateInvoice";
+import { CreateInvoice } from "@/components/adminDashboardComponents/InvoiceComponents/CreateInvoice";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/app/utils/auth";
 import { redirect } from "next/navigation";

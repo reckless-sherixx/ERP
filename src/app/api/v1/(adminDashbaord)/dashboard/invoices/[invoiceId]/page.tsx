@@ -1,6 +1,6 @@
 import { auth } from "@/app/utils/auth";
 import { canCreateInvoice } from "@/app/utils/dashboardAccess";
-import { EditInvoice } from "@/components/adminDashboardComponents/EditInvoice";
+import { EditInvoice } from "@/components/adminDashboardComponents/InvoiceComponents/EditInvoice";
 import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation";
 

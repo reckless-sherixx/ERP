@@ -20,21 +20,26 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon } from "lucide-react";
-import { SubmitButton } from "../general/SubmitButton";
-import { useActionState, useState } from "react";
+import { useActionState, useState } from "react";``
+import { SubmitButton } from "../../general/SubmitButton";
+import { createInvoice } from "../../../actions";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { invoiceSchema } from "@/app/utils/zodSchemas";
-import { editInvoice } from '@/actions';
 import { formatCurrency } from "@/app/utils/formatCurrency";
-import { Prisma } from "@prisma/client";
 
-interface EditInvoiceProps {
-    data: Prisma.InvoiceGetPayload<{}>;//get invoice data from prisma
+interface CreateInvoiceProps {
+    name:string;
+    address: string;
+    email: string;
 }
 
-export function EditInvoice({ data }: EditInvoiceProps) {
-    const [lastResult, action] = useActionState(editInvoice, undefined);
+export function CreateInvoice({
+    name,
+    address,
+    email,
+}: CreateInvoiceProps) {
+    const [lastResult, action] = useActionState(createInvoice, undefined);
     const [form, fields] = useForm({
         lastResult,
 
@@ -48,12 +53,20 @@ export function EditInvoice({ data }: EditInvoiceProps) {
         shouldRevalidate: "onInput",
     });
 
-    const [selectedDate, setSelectedDate] = useState(data.date);
-    const [rate, setRate] = useState(data.invoiceItemRate.toString());
-    const [quantity, setQuantity] = useState(data.invoiceItemQuantity.toString());
-    const [currency, setCurrency] = useState(data.currency);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [rate, setRate] = useState("");
+    const [quantity, setQuantity] = useState("");
+    const [currency, setCurrency] = useState("INR");
 
     const calculateTotal = (Number(quantity) || 0) * (Number(rate) || 0);
+
+    const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat("en-IN", {
+        timeZone: 'UTC',
+        dateStyle: "long",
+    }).format(date);
+};
+
     return (
         <Card className="w-full max-w-4xl mx-auto">
             <CardContent className="p-6">
@@ -63,8 +76,6 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                         name={fields.date.name}
                         value={selectedDate.toISOString()}
                     />
-                    {/* sending id with the formData */}
-                    <input type="hidden" name="id" value={data.id} />
 
                     <input
                         type="hidden"
@@ -78,11 +89,11 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                             <Input
                                 name={fields.invoiceName.name}
                                 key={fields.invoiceName.key}
-                                defaultValue={data.invoiceName}
+                                defaultValue={fields.invoiceNumber.initialValue}
                                 placeholder="Test 123"
                             />
                         </div>
-                        <p className="text-sm text-red-500">{fields.invoiceName.errors}</p>
+                        <p className="text-sm text-red-500">{fields.invoiceNumber.errors}</p>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-6 mb-6">
@@ -95,7 +106,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                                 <Input
                                     name={fields.invoiceNumber.name}
                                     key={fields.invoiceNumber.key}
-                                    defaultValue={data.invoiceNumber}
+                                    defaultValue={fields.invoiceNumber.initialValue}
                                     className="rounded-l-none"
                                     placeholder="5"
                                 />
@@ -118,9 +129,9 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="USD">
-                                        United States Dollar -- USD
+                                        Indian Rupees -- INR
                                     </SelectItem>
-                                    <SelectItem value="EUR">Euro -- EUR</SelectItem>
+                                    <SelectItem value="EUR">United States Dollar -- USD</SelectItem>
                                 </SelectContent>
                             </Select>
                             <p className="text-red-500 text-sm">{fields.currency.errors}</p>
@@ -135,14 +146,14 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                                     name={fields.fromName.name}
                                     key={fields.fromName.key}
                                     placeholder="Your Name"
-                                    defaultValue={data.fromName}
+                                    defaultValue={name}
                                 />
                                 <p className="text-red-500 text-sm">{fields.fromName.errors}</p>
                                 <Input
                                     placeholder="Your Email"
                                     name={fields.fromEmail.name}
                                     key={fields.fromEmail.key}
-                                    defaultValue={data.fromEmail}
+                                    defaultValue={email}
                                 />
                                 <p className="text-red-500 text-sm">
                                     {fields.fromEmail.errors}
@@ -151,7 +162,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                                     placeholder="Your Address"
                                     name={fields.fromAddress.name}
                                     key={fields.fromAddress.key}
-                                    defaultValue={data.fromAddress}
+                                    defaultValue={address}
                                 />
                                 <p className="text-red-500 text-sm">
                                     {fields.fromAddress.errors}
@@ -165,7 +176,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                                 <Input
                                     name={fields.clientName.name}
                                     key={fields.clientName.key}
-                                    defaultValue={data.clientName}
+                                    defaultValue={fields.clientName.initialValue}
                                     placeholder="Client Name"
                                 />
                                 <p className="text-red-500 text-sm">
@@ -174,7 +185,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                                 <Input
                                     name={fields.clientEmail.name}
                                     key={fields.clientEmail.key}
-                                    defaultValue={data.clientEmail}
+                                    defaultValue={fields.clientEmail.initialValue}
                                     placeholder="Client Email"
                                 />
                                 <p className="text-red-500 text-sm">
@@ -183,7 +194,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                                 <Input
                                     name={fields.clientAddress.name}
                                     key={fields.clientAddress.key}
-                                    defaultValue={data.clientAddress}
+                                    defaultValue={fields.clientAddress.initialValue}
                                     placeholder="Client Address"
                                 />
                                 <p className="text-red-500 text-sm">
@@ -207,9 +218,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                                         <CalendarIcon />
 
                                         {selectedDate ? (
-                                            new Intl.DateTimeFormat("en-US", {
-                                                dateStyle: "long",
-                                            }).format(selectedDate)
+                                            formatDate(selectedDate)
                                         ) : (
                                             <span>Pick a Date</span>
                                         )}
@@ -232,7 +241,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                             <Select
                                 name={fields.dueDate.name}
                                 key={fields.dueDate.key}
-                                defaultValue={data.dueDate.toString()}
+                                defaultValue={fields.dueDate.initialValue}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select due date" />
@@ -260,7 +269,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                                 <Textarea
                                     name={fields.invoiceItemDescription.name}
                                     key={fields.invoiceItemDescription.key}
-                                    defaultValue={data.invoiceItemDescription}
+                                    defaultValue={fields.invoiceItemDescription.initialValue}
                                     placeholder="Item name & description"
                                 />
                                 <p className="text-red-500 text-sm">
@@ -333,7 +342,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
                         <Textarea
                             name={fields.note.name}
                             key={fields.note.key}
-                            defaultValue={data.note ?? undefined}
+                            defaultValue={fields.note.initialValue}
                             placeholder="Add your Note/s right here..."
                         />
                         <p className="text-red-500 text-sm">{fields.note.errors}</p>
@@ -341,7 +350,7 @@ export function EditInvoice({ data }: EditInvoiceProps) {
 
                     <div className="flex items-center justify-end mt-6">
                         <div>
-                            <SubmitButton text="Update Invoice" />
+                            <SubmitButton text="Send Invoice to Client" />
                         </div>
                     </div>
                 </form>

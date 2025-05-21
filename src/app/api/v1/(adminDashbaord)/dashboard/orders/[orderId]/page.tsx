@@ -1,6 +1,6 @@
 import { canCreateOrder } from "@/app/utils/dashboardAccess";
 import { requireUser } from "@/app/utils/hooks";
-import { EditOrder } from "@/components/adminDashboardComponents/EditOrder";
+import { EditOrder } from "@/components/adminDashboardComponents/OrderComponents/EditOrder";
 import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation";
 

@@ -5,7 +5,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Graph } from "./Graph";
+import { Graph } from "../../general/Graph";
 import {prisma} from "@/lib/prisma";
 import { requireUser } from "@/app/utils/hooks";
 
