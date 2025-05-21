@@ -61,7 +61,7 @@ export async function InvoiceList() {
                     <TableBody>
                         {data.map((invoice) => (
                             <TableRow key={invoice.id}>
-                                <TableCell>#{invoice.invoiceNumber}</TableCell>
+                                <TableCell>#INV-{invoice.invoiceNumber}</TableCell>
                                 <TableCell>{invoice.clientName}</TableCell>
                                 <TableCell>
                                     {formatCurrency({

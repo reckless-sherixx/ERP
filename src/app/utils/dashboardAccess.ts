@@ -16,3 +16,9 @@ export function canCreateOrder(role?: string): boolean {
     return role ? allowedRoles.includes(role) : false;
 }
 
+//Access to all routes in admin dashboard
+export function canEditInAdminDashboard(role?: string): boolean {
+    const allowedRoles = ['SYSTEM_ADMIN','ADMIN'];
+    return role ? allowedRoles.includes(role) : false;
+}
+
