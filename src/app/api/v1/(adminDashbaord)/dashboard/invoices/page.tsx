@@ -1,3 +1,5 @@
+import { canCreateInvoice } from "@/app/utils/dashboardAccess";
+import { requireUser } from "@/app/utils/hooks";
 import { InvoiceList } from "@/components/adminDashboardComponents/InvoiceComponents/InvoiceList";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -10,9 +12,16 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { PlusIcon } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-export default function InvoicesRoute() {
+export default async function InvoicesRoute() {
+    const session = await requireUser();
+
+    if(!canCreateInvoice(session.user?.role)) {
+        redirect("/api/v1/dashboard");
+    }
+
     return (
         <Card>
             <CardHeader>

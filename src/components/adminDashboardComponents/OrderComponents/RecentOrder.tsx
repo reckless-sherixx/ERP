@@ -3,16 +3,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {prisma} from "@/lib/prisma";
 import { requireUser } from "@/app/utils/hooks";
 import { formatCurrency } from "@/app/utils/formatCurrency";
-async function getData(userId: string) {
+import { Role } from "@prisma/client";
+async function getData(userId: string, userRole: Role) {
+    const where = userRole === Role.SYSTEM_ADMIN || userRole === Role.ADMIN
+        ? {}  // Empty where clause to get all orders
+        : { userId: userId };
+
     const data = await prisma.order.findMany({
-        where: {
-            userId: userId,
-        },
+        where,
         select: {
             id: true,
             customerName: true,
             customerEmail: true,
             totalPrice: true,
+            user: {
+                select: {
+                    name: true,
+                }
+            },
+            createdAt: true,
         },
         orderBy: {
             createdAt: "desc",
@@ -25,7 +34,7 @@ async function getData(userId: string) {
 
 export async function RecentOrders() {
     const session = await requireUser();
-    const data = await getData(session.user?.id as string);
+    const data = await getData(session.user?.id as string , session.user?.role);
     return (
         <Card>
             <CardHeader>

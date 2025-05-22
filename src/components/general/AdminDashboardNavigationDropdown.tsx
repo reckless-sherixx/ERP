@@ -20,7 +20,12 @@ import {
 import { useRouter, useSearchParams } from "next/navigation"
 import { Role } from "@prisma/client"
 
-
+// Define default views for specific roles
+const DEFAULT_VIEWS: Partial<Record<Role, string>> = {
+    SALES: "orders",
+    ACCOUNTING: "invoices",
+    FACTORY_MANAGER: "factory"
+} as const;
 
 const dashboards = [
     {
@@ -50,19 +55,28 @@ interface AdminDashboardNavigationDropdownProps {
 export function AdminDashboardNavigationDropdown({ userRole }: AdminDashboardNavigationDropdownProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const currentView = searchParams.get("view") || "invoices";
-    
+    const currentView = searchParams.get("view");
+
     const [open, setOpen] = React.useState(false);
 
+    // Set default view based on user role
+    React.useEffect(() => {
+        if (!currentView && DEFAULT_VIEWS[userRole]) {
+            router.push(`/api/v1/dashboard?view=${DEFAULT_VIEWS[userRole]}`);
+        }
+    }, [currentView, userRole, router]);
+
     // Filter dashboards based on user role
-    const availableDashboards = dashboards.filter(dashboard => 
+    const availableDashboards = dashboards.filter(dashboard =>
         dashboard.roles.includes(userRole as any)
     );
 
     // Don't render if user has no access to any dashboard
     if (availableDashboards.length === 0) return null;
 
-    const currentDashboard = dashboards.find(d => d.value === currentView);
+    const currentDashboard = dashboards.find(d => 
+        d.value === (currentView || DEFAULT_VIEWS[userRole])
+    );
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -95,8 +109,8 @@ export function AdminDashboardNavigationDropdown({ userRole }: AdminDashboardNav
                                     <Check
                                         className={cn(
                                             "mr-2 h-4 w-4",
-                                            currentView === dashboard.value 
-                                                ? "opacity-100" 
+                                            currentView === dashboard.value
+                                                ? "opacity-100"
                                                 : "opacity-0"
                                         )}
                                     />

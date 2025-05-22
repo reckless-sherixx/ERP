@@ -8,16 +8,26 @@ import {
 import { Graph } from "../../general/Graph";
 import {prisma} from "@/lib/prisma";
 import { requireUser } from "@/app/utils/hooks";
+import { Role } from "@prisma/client";
 
-async function getOrders(userId: string) {
-    const rawData = await prisma.order.findMany({
-        where: {
+async function getOrders(userId: string, userRole: Role) {
+    const where = userRole === Role.SYSTEM_ADMIN || userRole === Role.ADMIN
+        ? {
+            createdAt: {
+                lte: new Date(),
+                gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            },
+        }
+        : {
             userId: userId,
             createdAt: {
                 lte: new Date(),
                 gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
             },
-        },
+        };
+
+    const rawData = await prisma.order.findMany({
+        where,
         select: {
             createdAt: true,
             totalPrice: true,
@@ -27,21 +37,18 @@ async function getOrders(userId: string) {
         },
     });
 
-    //Group and aggregate data by date
     const aggregatedData = rawData.reduce(
         (acc: { [key: string]: number }, curr) => {
             const date = new Date(curr.createdAt).toLocaleDateString("en-IN", {
                 month: "short",
                 day: "numeric",
             });
-
             acc[date] = (acc[date] || 0) + curr.totalPrice;
-
             return acc;
         },
         {}
     );
-    //Convert to array and from the object
+
     const transformedData = Object.entries(aggregatedData)
         .map(([date, amount]) => ({
             date,
@@ -59,7 +66,7 @@ async function getOrders(userId: string) {
 
 export async function OrderGraph() {
     const session = await requireUser();
-    const data = await getOrders(session.user?.id as string);
+    const data = await getOrders(session.user?.id as string , session.user?.role as Role);
 
     return (
         <Card className="lg:col-span-2">

@@ -9,6 +9,7 @@ import { OrderGraph } from "@/components/adminDashboardComponents/OrderComponent
 import { RecentInvoices } from "@/components/adminDashboardComponents/InvoiceComponents/RecentInvoice";
 import { canEditInAdminDashboard } from "@/app/utils/dashboardAccess";
 import { RecentOrders } from "@/components/adminDashboardComponents/OrderComponents/RecentOrder";
+import { Role } from "@prisma/client";
 
 interface PageProps {
     searchParams: { view?: string }
@@ -16,7 +17,13 @@ interface PageProps {
 
 export default async function DashboardRoute({ searchParams }: PageProps) {
     const session = await requireUser();
-    const view = searchParams.view || "invoices";
+    // Determine default view based on role
+    const defaultView = session.user.role === Role.SALES ? "orders" 
+        : session.user.role === Role.ACCOUNTING ? "invoices"
+        : session.user.role === Role.FACTORY_MANAGER ? "factory"
+        : "invoices";  // Default for admin and others
+    
+    const view = searchParams.view || defaultView;
 
     return (
         <div className="space-y-6">
