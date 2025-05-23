@@ -1,6 +1,6 @@
 "use server"
 import { requireUser } from "@/app/utils/hooks";
-import { invoiceSchema, orderSchema } from "@/app/utils/zodSchemas";
+import { inventorySchema, invoiceSchema, orderSchema } from "@/app/utils/zodSchemas";
 import { parseWithZod } from "@conform-to/zod";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
@@ -251,4 +251,42 @@ export async function DeleteOrder(orderId: string) {
   });
 
   return redirect("/api/v1/dashboard/orders");
+}
+
+export async function addMaterial(prevState: any, formData: FormData) {
+  const session = await requireUser();
+
+  const submission = parseWithZod(formData, {
+    schema: inventorySchema,
+  });
+
+  if (submission.status !== "success") {
+    return submission.reply();
+  }
+
+  const materialCount = await prisma.inventoryItem.count();
+  const materialId = `MAT-${(materialCount + 1)
+    .toString()
+    .padStart(4, "0")}`;
+
+  try {
+    await prisma.inventoryItem.create({
+      data: {
+        materialId,
+        materialName: submission.value.materialName,
+        currentStock: submission.value.currentStock,
+        reorderPoint: submission.value.reorderPoint,
+        unit: submission.value.unit,
+        supplier: submission.value.supplier,     
+        stockStatus: submission.value.stockStatus, 
+        category: submission.value.category,
+        userId: session.user?.id,
+      },
+    });
+    return redirect("/api/v1/factory/dashboard/inventory");
+  } catch (error) {
+    return submission.reply({
+      formErrors: ["Failed to create material"]
+    });
+  }
 }

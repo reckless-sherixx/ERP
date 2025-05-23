@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation"
 const roleBasedLinks: Record<string, Role[]> = {
     dashboard: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER],
     orders: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER, Role.PRODUCTION_STAFF],
-    users: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER],
+    staff: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER],
     inventory: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER, Role.INVENTORY_MANAGER],
 };
 
@@ -45,17 +45,17 @@ export const dashboardLinks: DashboardLink[] = [
     {
         id: 1,
         name: 'Inventory',
-        href: '/api/v1/dashboard/inventory',
+        href: '/api/v1/factory/dashboard/inventory',
         icon: ShoppingCart,
         roles: roleBasedLinks.inventory,
     },
-]
+] as const ;
 
-interface DashboardLinksProps {
+interface FactoryDashboardLinksProps {
     userRole: Role;
 }
 
-export function DashboardLinks({ userRole }: DashboardLinksProps) {
+export function FactoryDashboardLinks({ userRole }: FactoryDashboardLinksProps) {
     const pathname = usePathname();
     return (
         <>

@@ -1,4 +1,4 @@
-export default function DasboardPage(){
+export default function DashboardPage(){
     return(
         <>Hi there</>
     )

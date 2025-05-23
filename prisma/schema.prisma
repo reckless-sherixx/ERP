@@ -37,6 +37,20 @@ enum Role {
   CUSTOMER
 }
 
+enum ItemCategory {
+  WOOD
+  VENEERS
+  HARDWARE
+  FINISHES
+  TOOLS
+}
+
+enum InventoryStockStatus {
+  LOW_STOCK
+  IN_STOCK
+  OUT_OF_STOCK
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -85,11 +99,12 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts    Account[]
-  sessions    Session[]
-  attachments Attachment[]
-  invoices    Invoice[]
-  Order       Order[]
+  accounts      Account[]
+  sessions      Session[]
+  attachments   Attachment[]
+  invoices      Invoice[]
+  Order         Order[]
+  InventoryItem InventoryItem[]
 }
 
 model Order {
@@ -109,6 +124,7 @@ model Order {
   updatedAt         DateTime    @updatedAt
   estimatedDelivery DateTime?
   note              String?
+  isApproved        Boolean?    @default(false)
 
   user   User?   @relation(fields: [userId], references: [id])
   userId String?
@@ -153,18 +169,24 @@ model Attachment {
 }
 
 model InventoryItem {
-  id           String                 @id @default(uuid())
-  name         String
-  category     String
+  id           String               @id @default(uuid())
+  materialId   String
+  materialName String
+  category     ItemCategory 
   unit         String
-  currentStock Float
-  reorderPoint Float
-  transactions InventoryTransaction[]
+  currentStock Int
+  reorderPoint Int
+  supplier     String
+  stockStatus  InventoryStockStatus @default(IN_STOCK)
+  user         User?                @relation(fields: [userId], references: [id])
+  userId       String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model InventoryTransaction {
-  id         String        @id @default(uuid())
-  material   InventoryItem @relation(fields: [materialId], references: [id])
+  id         String   @id @default(uuid())
   materialId String
   date       DateTime
   quantity   Float
