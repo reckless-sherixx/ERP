@@ -9,19 +9,22 @@ import {
 import { InventoryActions } from "./InventoryActions";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/app/utils/hooks";
-import { formatCurrency } from "@/app/utils/formatCurrency";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "../../general/EmptyState";
 
 async function getData() {
-    const data = await prisma.order.findMany({
+    const data = await prisma.inventoryItem.findMany({
         select: {
             id: true,
-            customerName: true,
-            totalPrice: true,
+            materialName: true,
+            currentStock: true,
+            reorderPoint: true,
+            stockStatus: true,
+            category: true,
+            materialId: true,
+            supplier: true,
+            unit: true,
             createdAt: true,
-            status: true,
-            orderNumber: true,
         },
         orderBy: {
             createdAt: "desc",
@@ -32,7 +35,7 @@ async function getData() {
 
 
 export async function InventoryList() {
-    const session = await requireUser();
+    await requireUser();
     const data = await getData();
     return (
         <>
@@ -52,33 +55,40 @@ export async function InventoryList() {
                             <TableHead>Category</TableHead>
                             <TableHead>Current Stock</TableHead>
                             <TableHead>Reorder Point</TableHead>
-                            <TableHead>Supplier</TableHead>
                             <TableHead>Status</TableHead>
+                            <TableHead>Supplier</TableHead>
+                            <TableHead>Updated On</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {data.map((order) => (
-                            <TableRow key={order.id}>
-                                <TableCell>#{order.orderNumber}</TableCell>
-                                <TableCell>{order.customerName}</TableCell>
+                        {data.map((item) => (
+                            <TableRow key={item.id}>
+                                <TableCell>#{item.materialId}</TableCell>
+                                <TableCell>{item.materialName}</TableCell>
                                 <TableCell>
-                                    {formatCurrency({
-                                        amount: order.totalPrice,
-                                        currency: "INR",
-                                    })}
+                                    {item.category.replace("_", " ")}
                                 </TableCell>
                                 <TableCell>
-                                    <Badge>{order.status}</Badge>
+                                    {item.currentStock} {item.unit.replace("_", " ")}
+                                </TableCell>
+                                <TableCell>
+                                    {item.reorderPoint} {item.unit.replace("_", " ")}
+                                </TableCell>
+                                <TableCell>
+                                    <Badge>{item.stockStatus}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                    {item.supplier}
                                 </TableCell>
                                 <TableCell>
                                     {new Intl.DateTimeFormat("en-IN", {
                                         timeZone: 'UTC',
                                         dateStyle: "medium",
-                                    }).format(new Date(order.createdAt))}
+                                    }).format(new Date(item.createdAt))}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <InventoryActions status={order.status} id={order.id} />
+                                    <InventoryActions status={item.stockStatus} id={item.id} />
                                 </TableCell>
                             </TableRow>
                         ))}

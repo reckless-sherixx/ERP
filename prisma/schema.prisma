@@ -7,12 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum PaymentStatus {
-  PENDING
-  PARTIAL
-  PAID
-}
-
 enum InvoiceStatus {
   PAID
   PENDING

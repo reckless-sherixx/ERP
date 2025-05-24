@@ -12,8 +12,25 @@ import { requireUser } from "@/app/utils/hooks";
 import { formatCurrency } from "@/app/utils/formatCurrency";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "../../general/EmptyState";
+import { Role } from "@prisma/client";
 
-async function getData(userId: string) {
+async function getData(userId: string , userRole:Role) {
+    if(userRole === Role.SYSTEM_ADMIN || userRole === Role.ADMIN){
+        return await prisma.invoice.findMany({
+            select: {
+                id: true,
+                clientName: true,
+                total: true,
+                createdAt: true,
+                status: true,
+                invoiceNumber: true,
+                currency: true,
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        });
+    }
     const data = await prisma.invoice.findMany({
         where: {
             userId: userId,
@@ -36,7 +53,7 @@ async function getData(userId: string) {
 }
 export async function InvoiceList() {
     const session = await requireUser();
-    const data = await getData(session.user?.id as string);
+    const data = await getData(session.user?.id as string , session.user?.role as Role);
     return (
         <>
             {data.length === 0 ? (

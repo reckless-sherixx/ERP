@@ -70,5 +70,4 @@ export const inventorySchema = z.object({
     currentStock: z.number().min(0, "Current stock cannot be negative"),
     reorderPoint: z.number().min(0, "Reorder point cannot be negative"),
     supplier: z.string().min(1, "Supplier name is required"),
-    stockStatus: z.enum(["LOW_STOCK", "IN_STOCK", "OUT_OF_STOCK"]).default("IN_STOCK")
 });

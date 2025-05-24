@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { emailClient } from "./app/utils/mailtrap";
 import { formatCurrency } from "./app/utils/formatCurrency";
+import { InventoryStockStatus } from "@prisma/client";
 
 //Invoice Actions
 export async function createInvoice(prevState: any, formData: FormData) {
@@ -253,6 +254,7 @@ export async function DeleteOrder(orderId: string) {
   return redirect("/api/v1/dashboard/orders");
 }
 
+//Inventory actions 
 export async function addMaterial(prevState: any, formData: FormData) {
   const session = await requireUser();
 
@@ -264,29 +266,39 @@ export async function addMaterial(prevState: any, formData: FormData) {
     return submission.reply();
   }
 
+
   const materialCount = await prisma.inventoryItem.count();
   const materialId = `MAT-${(materialCount + 1)
     .toString()
     .padStart(4, "0")}`;
 
-  try {
-    await prisma.inventoryItem.create({
-      data: {
-        materialId,
-        materialName: submission.value.materialName,
-        currentStock: submission.value.currentStock,
-        reorderPoint: submission.value.reorderPoint,
-        unit: submission.value.unit,
-        supplier: submission.value.supplier,     
-        stockStatus: submission.value.stockStatus, 
-        category: submission.value.category,
-        userId: session.user?.id,
-      },
-    });
-    return redirect("/api/v1/factory/dashboard/inventory");
-  } catch (error) {
-    return submission.reply({
-      formErrors: ["Failed to create material"]
-    });
+  //Determine stock status based on current stock and reorder stock
+  const currentStock = submission.value.currentStock;
+  const reorderPoint = submission.value.reorderPoint;
+  let stockStatus;
+
+  if(currentStock === 0) {
+    stockStatus = InventoryStockStatus.OUT_OF_STOCK;
+  } else if(currentStock <= reorderPoint){
+    stockStatus =InventoryStockStatus.LOW_STOCK;
+  } else {
+    stockStatus = InventoryStockStatus.IN_STOCK;
   }
+
+
+  await prisma.inventoryItem.create({
+    data: {
+      materialId,
+      materialName: submission.value.materialName,
+      currentStock: submission.value.currentStock,
+      reorderPoint: submission.value.reorderPoint,
+      unit: submission.value.unit,
+      supplier: submission.value.supplier,
+      stockStatus,
+      category: submission.value.category,
+      userId: session.user?.id,
+    },
+  });
+  return redirect("/api/v1/factory/dashboard/inventory");
+
 }

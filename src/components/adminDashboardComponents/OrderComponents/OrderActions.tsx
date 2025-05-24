@@ -52,7 +52,7 @@ export function OrderActions({ id, status }: OrderActionsProps) {
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                    <Link href={`/api/v1/orders/${id}`} target="_blank">
+                    <Link href={`/api/v1/order/${id}`} target="_blank">
                         <DownloadCloudIcon className="size-4 mr-2" /> View Order
                     </Link>
                 </DropdownMenuItem>
@@ -64,13 +64,12 @@ export function OrderActions({ id, status }: OrderActionsProps) {
                         <Trash className="size-4 mr-2" /> Delete Order
                     </Link>
                 </DropdownMenuItem>
-                {status !== "COMPLETED" && (
-                    <DropdownMenuItem asChild>
-                        <Link href={`/api/v1/dashboard/invoices/${id}/completed`}>
-                            <CheckCircle className="size-4 mr-2" /> Mark as Completed
-                        </Link>
-                    </DropdownMenuItem>
-                )}
+
+                <DropdownMenuItem asChild>
+                    <Link href={`/api/v1/dashboard/invoices/${id}/assign`}>
+                        <CheckCircle className="size-4 mr-2" /> Assign Order
+                    </Link>
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     );

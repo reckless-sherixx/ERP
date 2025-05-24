@@ -17,13 +17,14 @@ interface PageProps {
 
 export default async function DashboardRoute({ searchParams }: PageProps) {
     const session = await requireUser();
+    const params = await searchParams
     // Determine default view based on role
     const defaultView = session.user.role === Role.SALES ? "orders" 
         : session.user.role === Role.ACCOUNTING ? "invoices"
         : session.user.role === Role.FACTORY_MANAGER ? "factory"
         : "invoices";  // Default for admin and others
     
-    const view = searchParams.view || defaultView;
+    const view = params.view || defaultView;
 
     return (
         <div className="space-y-6">

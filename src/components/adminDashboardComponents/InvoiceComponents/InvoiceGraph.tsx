@@ -8,17 +8,25 @@ import {
 import { Graph } from "../../general/Graph";
 import {prisma} from "@/lib/prisma";
 import { requireUser } from "@/app/utils/hooks";
+import { Role } from "@prisma/client";
 
-async function getInvoices(userId: string) {
-    const rawData = await prisma.invoice.findMany({
-        where: {
-            status: "PAID",
+async function getInvoices(userId: string , userRole:Role) {
+     const where = userRole === Role.SYSTEM_ADMIN || userRole === Role.ADMIN
+        ? {
+            createdAt: {
+                lte: new Date(),
+                gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            },
+        }
+        : {
             userId: userId,
             createdAt: {
                 lte: new Date(),
                 gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
             },
-        },
+        };
+    const rawData = await prisma.invoice.findMany({
+        where,
         select: {
             createdAt: true,
             total: true,
@@ -60,7 +68,7 @@ async function getInvoices(userId: string) {
 
 export async function InvoiceGraph() {
     const session = await requireUser();
-    const data = await getInvoices(session.user?.id as string);
+    const data = await getInvoices(session.user?.id as string , session.user?.role as Role);
 
     return (
         <Card className="lg:col-span-2">

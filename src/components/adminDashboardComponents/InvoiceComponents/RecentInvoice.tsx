@@ -1,13 +1,15 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {prisma} from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/app/utils/hooks";
 import { formatCurrency } from "@/app/utils/formatCurrency";
-async function getData(userId: string) {
+import { Role } from "@prisma/client";
+async function getData(userId: string, userRole: Role) {
+    const where = userRole === Role.SYSTEM_ADMIN || userRole === Role.ADMIN
+        ? {}  // Empty where clause to get all orders
+        : { userId: userId };
     const data = await prisma.invoice.findMany({
-        where: {
-            userId: userId,
-        },
+        where,
         select: {
             id: true,
             clientName: true,
@@ -26,7 +28,7 @@ async function getData(userId: string) {
 
 export async function RecentInvoices() {
     const session = await requireUser();
-    const data = await getData(session.user?.id as string);
+    const data = await getData(session.user?.id as string , session.user?.role as Role);
     return (
         <Card>
             <CardHeader>
@@ -50,7 +52,7 @@ export async function RecentInvoices() {
                             +
                             {formatCurrency({
                                 amount: item.total,
-                                currency: item.currency as any,
+                                currency: "INR",
                             })}
                         </div>
                     </div>

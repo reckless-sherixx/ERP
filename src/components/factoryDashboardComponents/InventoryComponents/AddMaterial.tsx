@@ -1,16 +1,9 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
 import {
     Select,
     SelectContent,
@@ -19,12 +12,12 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { ItemCategory } from "@prisma/client";
-import { useActionState, useState } from "react"; 
+import { useActionState, useState } from "react";
 import { SubmitButton } from "../../general/SubmitButton";
 import { addMaterial } from "../../../actions";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { inventorySchema, orderSchema } from "@/app/utils/zodSchemas";
+import { inventorySchema } from "@/app/utils/zodSchemas";
 
 
 export function AddMaterial() {
@@ -61,7 +54,7 @@ export function AddMaterial() {
                                 <p className="text-red-500 text-sm">{fields.materialName.errors}</p>
 
                                 <Label>Category</Label>
-                                <Select name={fields.category.name} defaultValue={ItemCategory.WOOD}>
+                                <Select name={fields.category.name}>
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Select category" />
                                     </SelectTrigger>
@@ -74,6 +67,20 @@ export function AddMaterial() {
                                     </SelectContent>
                                 </Select>
                                 <p className="text-red-500 text-sm">{fields.category.errors}</p>
+                                <Label>Unit</Label>
+                                <Select name={fields.unit.name}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select unit" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="sq ft">sq ft</SelectItem>
+                                        <SelectItem value="board ft">board ft</SelectItem>
+                                        <SelectItem value="pairs">pairs</SelectItem>
+                                        <SelectItem value="gal">gal</SelectItem>
+                                        <SelectItem value="sq m">sq m</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-red-500 text-sm">{fields.unit.errors}</p>
                             </div>
                         </div>
                         <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -102,7 +109,7 @@ export function AddMaterial() {
                     </div>
                     <div className="flex items-center justify-end mt-6">
                         <div>
-                            <SubmitButton text="Create Order" />
+                            <SubmitButton text="Add Item" />
                         </div>
                     </div>
                 </form>

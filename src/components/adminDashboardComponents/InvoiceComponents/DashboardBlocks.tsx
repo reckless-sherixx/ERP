@@ -3,20 +3,22 @@ import { Activity, CreditCard, IndianRupee, Users } from "lucide-react";
 import {prisma} from "@/lib/prisma";
 import { requireUser } from "@/app/utils/hooks";
 import { formatCurrency } from "@/app/utils/formatCurrency";
+import { Role } from "@prisma/client";
 
-async function getData(userId: string) {
-    const [data, openInvoices, paidinvoices] = await Promise.all([
+async function getData(userId: string , userRole: Role) {
+     const whereClause = userRole === Role.SYSTEM_ADMIN || userRole === Role.ADMIN
+            ? {}  // Empty where clause for admins to see all invoices
+            : { userId: userId };  // Filter by userId for other invoices
+    const [data, openInvoices, paidInvoices] = await Promise.all([
         prisma.invoice.findMany({
-            where: {
-                userId: userId,
-            },
+            where: whereClause,
             select: {
                 total: true,
             },
         }),
         prisma.invoice.findMany({
             where: {
-                userId: userId,
+                ...whereClause,
                 status: "PENDING",
             },
             select: {
@@ -26,7 +28,7 @@ async function getData(userId: string) {
 
         prisma.invoice.findMany({
             where: {
-                userId: userId,
+                ...whereClause,
                 status: "PAID",
             },
             select: {
@@ -38,14 +40,14 @@ async function getData(userId: string) {
     return {
         data,
         openInvoices,
-        paidinvoices,
+        paidInvoices,
     };
 }
 
 export async function DashboardBlocks() {
     const session = await requireUser();
-    const { data, openInvoices, paidinvoices } = await getData(
-        session.user?.id as string
+    const { data, openInvoices, paidInvoices } = await getData(
+        session.user?.id as string , session.user?.role as Role
     );
 
     return (
@@ -83,7 +85,7 @@ export async function DashboardBlocks() {
                     <CreditCard className="size-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <h2 className="text-2xl font-bold">+{paidinvoices.length}</h2>
+                    <h2 className="text-2xl font-bold">+{paidInvoices.length}</h2>
                     <p className="text-xs text-muted-foreground">
                         Total Invoices which have been paid!
                     </p>

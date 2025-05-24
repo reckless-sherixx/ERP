@@ -83,8 +83,8 @@ export async function GET(
     pdf.setFont("helvetica", "bold");
     pdf.text("Description", 20, 100);
     pdf.text("Quantity", 100, 100);
-    pdf.text("Rate", 130, 100);
-    pdf.text("Total", 160, 100);
+    pdf.text("Rate (INR)", 130, 100);
+    pdf.text("Total (INR)", 160, 100);
 
     // draw header line
     pdf.line(20, 102, 190, 102);
@@ -94,15 +94,12 @@ export async function GET(
     pdf.text(data.invoiceItemDescription, 20, 110);
     pdf.text(data.invoiceItemQuantity.toString(), 100, 110);
     pdf.text(
-        formatCurrency({
-            amount: data.invoiceItemRate,
-            currency: data.currency as any,
-        }),
+        Number(data.invoiceItemRate).toLocaleString(),
         130,
         110
     );
     pdf.text(
-        formatCurrency({ amount: data.total, currency: data.currency as any }),
+         Number(data.total).toLocaleString(),
         160,
         110
     );
@@ -110,9 +107,9 @@ export async function GET(
     // Total Section
     pdf.line(20, 115, 190, 115);
     pdf.setFont("helvetica", "bold");
-    pdf.text(`Total (${data.currency})`, 130, 130);
+    pdf.text(`Total (INR)`, 130, 130);
     pdf.text(
-        formatCurrency({ amount: data.total, currency: data.currency as any }),
+        Number(data.total).toLocaleString(),
         160,
         130
     );

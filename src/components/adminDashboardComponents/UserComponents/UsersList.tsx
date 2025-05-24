@@ -25,7 +25,7 @@ type RoleVariant = 'default' | 'secondary' | 'outline' | 'destructive';
         DESIGN: { variant: 'outline', label: 'Design Team' },
         PRODUCTION_STAFF: { variant: 'outline', label: 'Production Staff' },
         SALES: { variant: 'outline', label: 'Sales Team' },
-        ACCOUNTING: { variant: 'outline', label: 'Employee' },
+        ACCOUNTING: { variant: 'outline', label: 'Accounting' },
         CUSTOMER: { variant: 'destructive', label: 'Customer' }
     } as const;
 

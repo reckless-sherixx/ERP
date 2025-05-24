@@ -1,6 +1,6 @@
 interface formatCurrencyProps {
   amount: number;
-  currency: "INR" | "EUR";
+  currency: "INR";
 }
 
 export function formatCurrency({ amount, currency }: formatCurrencyProps) {
@@ -8,11 +8,4 @@ export function formatCurrency({ amount, currency }: formatCurrencyProps) {
     style: "currency",
     currency: currency,
   }).format(amount);
-}
-
-interface floatCurrencyProps {
-  amount: number;
-  currency: "INR" | "EUR";
-  minimumFractionDigits?: number;
-  maximumFractionDigits?: number;
 }
