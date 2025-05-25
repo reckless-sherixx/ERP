@@ -45,6 +45,12 @@ enum InventoryStockStatus {
   OUT_OF_STOCK
 }
 
+enum ProductionStatus {
+  ASSEMBLY
+  CUTTING
+  FINISHING
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -102,23 +108,26 @@ model User {
 }
 
 model Order {
-  id                String      @id @default(uuid())
-  orderNumber       String      @unique
-  customerName      String
-  customerEmail     String?     @unique
-  customerPhone     String
-  customerAddress   String
-  status            OrderStatus @default(PENDING)
-  productId         String?
-  itemQuantity      Int
-  itemRate          Int
-  itemDescription   String
-  totalPrice        Int
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-  estimatedDelivery DateTime?
-  note              String?
-  isApproved        Boolean?    @default(false)
+  id                   String           @id @default(uuid())
+  orderNumber          String           @unique
+  customerName         String
+  customerEmail        String?          @unique
+  customerPhone        String
+  customerAddress      String
+  status               OrderStatus      @default(PENDING)
+  productId            String?
+  itemQuantity         Int
+  itemRate             Int
+  itemDescription      String
+  totalPrice           Int
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  estimatedDelivery    DateTime?
+  note                 String?
+  isApprovedByCustomer Boolean?         @default(false)
+  isApprovedByAdmin    Boolean?         @default(false)
+  isAssigned           Boolean?         @default(false)
+  productionStatus     ProductionStatus @default(CUTTING)
 
   user   User?   @relation(fields: [userId], references: [id])
   userId String?
@@ -166,7 +175,7 @@ model InventoryItem {
   id           String               @id @default(uuid())
   materialId   String
   materialName String
-  category     ItemCategory 
+  category     ItemCategory
   unit         String
   currentStock Int
   reorderPoint Int
@@ -177,35 +186,6 @@ model InventoryItem {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-model InventoryTransaction {
-  id         String   @id @default(uuid())
-  materialId String
-  date       DateTime
-  quantity   Float
-  orderId    String?
-  recordedBy String
-  notes      String?
-}
-
-model Product {
-  id          String    @id @default(uuid())
-  name        String
-  sku         String    @unique
-  description String?
-  price       Float
-  supplierId  String?
-  supplier    Supplier? @relation(fields: [supplierId], references: [id])
-}
-
-model Supplier {
-  id       String    @id @default(uuid())
-  name     String
-  email    String?
-  phone    String?
-  address  String?
-  products Product[]
 }
 
 model Notification {

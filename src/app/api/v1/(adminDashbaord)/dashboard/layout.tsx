@@ -19,7 +19,7 @@ import { signOut } from "@/app/utils/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { hasAdminDashboardAccess } from "@/app/utils/dashboardAccess";
 import { redirect } from "next/navigation";
-import { Role } from "@/types/roles";
+import { Role } from "@prisma/client";
 
 export default async function DashboardLayout({
     children,

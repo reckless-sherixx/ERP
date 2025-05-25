@@ -43,7 +43,7 @@ const dashboards = [
     {
         value: "factory",
         label: "Factory Dashboard",
-        roles: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER],
+        roles: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER , Role.INVENTORY_MANAGER , Role.PRODUCTION_STAFF],
         href: "/api/v1//factory/dashboard?view=factory"
     }
 ] as const;

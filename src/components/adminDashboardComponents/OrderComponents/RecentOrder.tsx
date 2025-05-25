@@ -38,7 +38,7 @@ export async function RecentOrders() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Recent Invoices</CardTitle>
+                <CardTitle>Recent Orders</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-8">
                 {data.map((item) => (
