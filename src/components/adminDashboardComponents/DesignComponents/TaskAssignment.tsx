@@ -1,35 +1,40 @@
+"use client";
+
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Eye, UserPlus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { TaskList } from "./TaskList";
+import { AssignOrderDialog } from "./AssignOrderDialog";
+import { OrderDetailsDialog } from "./OrderDetailsDialog";
 
-async function getData() {
-    const data = await prisma.order.findMany({
-        where: {
-            isAssigned: false,
-        },
-        select: {
-            id: true,
-            orderNumber: true,
-            user: {
-                select: {
-                    name: true,
-                    email: true,
-                },
-            },
-            createdAt: true,
-            productId: true,
-            itemDescription: true,
-            totalPrice: true,
-        },
-    });
-    return data;
+interface Order {
+    id: string;
+    orderNumber: string;
+    user: {
+        name: string | null;
+        email: string | null;
+    } | null;
+    createdAt: Date;
+    itemDescription: string;
+    totalPrice: number;
+    status: string;
+    shippingAddress?: string;
+
 }
 
-export async function TaskAssignment() {
-    const data = await getData();
+interface TaskAssignmentProps {
+    initialData: Order[];
+}
+
+export function TaskAssignment({ initialData }: TaskAssignmentProps) {
+    const [selectedOrder, setSelectedOrder] = useState<{
+        id: string;
+        orderNumber: string;
+    } | null>(null);
+
+    const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
+
     return (
         <>
             <Card className="mb-6">
@@ -39,13 +44,13 @@ export async function TaskAssignment() {
                         Available Orders for Assignment
                     </CardTitle>
                     <CardDescription>
-                        Orders that need to be assigned to team members ({data.length} orders)
+                        Orders that need to be assigned to team members ({initialData.length} orders)
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     {/* UnAssigned Orders */}
                     <div className="space-y-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {data.map((order) => (
+                        {initialData.map((order) => (
                             <div key={order.id} className="border rounded-lg p-6">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-4">
@@ -82,10 +87,19 @@ export async function TaskAssignment() {
                                         ₹{order.totalPrice.toFixed(2)}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Button variant="outline" size="icon">
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => setViewingOrder(order)}
+                                        >
                                             <Eye className="h-4 w-4" />
                                         </Button>
-                                        <Button>
+                                        <Button
+                                            onClick={() => setSelectedOrder({
+                                                id: order.id,
+                                                orderNumber: order.orderNumber
+                                            })}
+                                        >
                                             <UserPlus className="h-4 w-4 mr-2" />
                                             Assign
                                         </Button>
@@ -96,16 +110,25 @@ export async function TaskAssignment() {
                     </div>
                 </CardContent>
             </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-2xl font-bold">Orders ({`${data.length}`})</CardTitle>
-                        <CardDescription>Manage and assign customer orders</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {/* Task List */}
-                    <TaskList />
-                </CardContent>
-            </Card>
+
+            {/* Assign order dialog box */}
+            {selectedOrder && (
+                <AssignOrderDialog
+                    isOpen={!!selectedOrder}
+                    onClose={() => setSelectedOrder(null)}
+                    orderId={selectedOrder.id}
+                    orderNumber={selectedOrder.orderNumber}
+                />
+            )}
+
+            {/* View order dialog box */}
+            {viewingOrder && (
+                <OrderDetailsDialog
+                    isOpen={!!viewingOrder}
+                    onClose={() => setViewingOrder(null)}
+                    order={viewingOrder}
+                />
+            )}
         </>
     );
 }

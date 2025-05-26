@@ -22,11 +22,22 @@ async function getData() {
             createdAt: true,
             status: true,
             orderNumber: true,
+            Assignee: {
+                select: {
+                    user: {
+                        select: {
+                            name: true,
+                            email: true
+                        }
+                    }
+                }
+            }
         },
         orderBy: {
             createdAt: "desc",
         },
     });
+
 
     return data;
 }
@@ -73,13 +84,16 @@ export async function TaskList() {
                                     <Badge>{order.status}</Badge>
                                 </TableCell>
                                 <TableCell>
-                                    {/* {order.assignedTo ? order.assignedTo : "Not Assigned"} */}
+                                    {order.Assignee?.[0]?.user?.name || "Not Assigned"}
                                 </TableCell>
                                 <TableCell>
                                     {new Intl.DateTimeFormat("en-IN", {
                                         timeZone: 'UTC',
                                         dateStyle: "medium",
                                     }).format(new Date(order.createdAt))}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    {/* Add your action buttons here */}hi
                                 </TableCell>
                             </TableRow>
                         ))}
