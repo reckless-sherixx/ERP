@@ -105,6 +105,7 @@ model User {
   invoices      Invoice[]
   Order         Order[]
   InventoryItem InventoryItem[]
+  Assignee      Assignee[]
 }
 
 model Order {
@@ -129,8 +130,19 @@ model Order {
   isAssigned           Boolean?         @default(false)
   productionStatus     ProductionStatus @default(CUTTING)
 
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String?
+  user     User?      @relation(fields: [userId], references: [id])
+  userId   String?
+  Assignee Assignee[]
+}
+
+model Assignee {
+  id         String   @id @default(uuid())
+  orderId    String
+  userId     String
+  assignedAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Invoice {
