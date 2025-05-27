@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, UserPlus } from "lucide-react";
-import { TaskList } from "./TaskList";
 import { AssignOrderDialog } from "./AssignOrderDialog";
 import { OrderDetailsDialog } from "./OrderDetailsDialog";
 import { OrderStatus } from "@prisma/client";
@@ -13,7 +12,7 @@ interface Order {
     id: string;
     orderNumber: string;
     customerName: string;
-    customerEmail: string ;  
+    customerEmail: string | null;  
     customerAddress: string;
     createdAt: Date;
     itemDescription: string;

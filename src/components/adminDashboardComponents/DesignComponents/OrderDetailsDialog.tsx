@@ -17,7 +17,7 @@ interface OrderDetailsDialogProps {
     order: {
         orderNumber: string;
         customerName: string;
-        customerEmail: string;
+        customerEmail: string | null;
         createdAt: Date;
         itemDescription: string;
         totalPrice: number;
