@@ -7,20 +7,19 @@ import { Eye, UserPlus } from "lucide-react";
 import { TaskList } from "./TaskList";
 import { AssignOrderDialog } from "./AssignOrderDialog";
 import { OrderDetailsDialog } from "./OrderDetailsDialog";
+import { OrderStatus } from "@prisma/client";
 
 interface Order {
     id: string;
     orderNumber: string;
-    user: {
-        name: string | null;
-        email: string | null;
-    } | null;
+    customerName: string;
+    customerEmail: string ;  
+    customerAddress: string;
     createdAt: Date;
     itemDescription: string;
     totalPrice: number;
-    status: string;
-    shippingAddress?: string;
-
+    status: OrderStatus;  
+    productId: string | null;  
 }
 
 interface TaskAssignmentProps {
@@ -73,8 +72,8 @@ export function TaskAssignment({ initialData }: TaskAssignmentProps) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h4 className="font-medium">{order.user?.name}</h4>
-                                    <p className="text-sm text-muted-foreground">{order.user?.email}</p>
+                                    <h4 className="font-medium">{order.customerName}</h4>
+                                    <p className="text-sm text-muted-foreground">{order.customerEmail}</p>
                                 </div>
 
                                 <div className="mt-4">
@@ -126,7 +125,7 @@ export function TaskAssignment({ initialData }: TaskAssignmentProps) {
                 <OrderDetailsDialog
                     isOpen={!!viewingOrder}
                     onClose={() => setViewingOrder(null)}
-                    order={viewingOrder}
+                    order={viewingOrder }
                 />
             )}
         </>

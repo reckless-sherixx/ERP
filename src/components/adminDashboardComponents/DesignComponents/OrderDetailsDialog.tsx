@@ -16,10 +16,8 @@ interface OrderDetailsDialogProps {
     onClose: () => void;
     order: {
         orderNumber: string;
-        user: {
-            name: string | null;
-            email: string | null;
-        } | null;
+        customerName: string;
+        customerEmail: string;
         createdAt: Date;
         itemDescription: string;
         totalPrice: number;
@@ -43,8 +41,8 @@ export function OrderDetailsDialog({ isOpen, onClose, order }: OrderDetailsDialo
                     <div className="flex justify-between items-start">
                         <div className="space-y-1">
                             <h3 className="text-sm font-semibold text-muted-foreground">Customer</h3>
-                            <p className="text-base font-medium">{order.user?.name}</p>
-                            <p className="text-sm text-muted-foreground">{order.user?.email}</p>
+                            <p className="text-base font-medium">{order.customerName}</p>
+                            <p className="text-sm text-muted-foreground">{order.customerEmail ?? ""}</p>
                         </div>
                         <div className="text-right">
                             <h3 className="text-sm font-semibold text-muted-foreground">Order Total</h3>

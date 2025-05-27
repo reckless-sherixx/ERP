@@ -10,6 +10,8 @@ import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/app/utils/formatCurrency";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "../../general/EmptyState";
+import { TaskActions } from "./TaskActions";
+
 
 
 async function getData() {
@@ -17,6 +19,8 @@ async function getData() {
         select: {
             id: true,
             customerName: true,
+            customerAddress: true,
+            customerEmail: true,
             itemDescription: true,
             totalPrice: true,
             createdAt: true,
@@ -93,7 +97,20 @@ export async function TaskList() {
                                     }).format(new Date(order.createdAt))}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    {/* Add your action buttons here */}hi
+                                    <TaskActions
+                                        id={order.id}
+                                        order={{
+                                            orderNumber: order.orderNumber,
+                                            customerName: order.customerName,
+                                            customerEmail:order.customerEmail ?? "",
+                                            customerAddress: order.customerAddress,
+                                            createdAt: order.createdAt,
+                                            itemDescription: order.itemDescription,
+                                            totalPrice: order.totalPrice,
+                                            status: order.status,
+                                            shippingAddress: order.customerAddress,
+                                        }}
+                                    />
                                 </TableCell>
                             </TableRow>
                         ))}

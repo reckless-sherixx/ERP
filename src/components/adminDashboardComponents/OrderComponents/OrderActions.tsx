@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
     CheckCircle,
-    DownloadCloudIcon,
+    EyeIcon,
     Mail,
     MoreHorizontal,
     Pencil,
@@ -19,9 +19,8 @@ import { toast } from "sonner";
 
 interface OrderActionsProps {
     id: string;
-    status: string;
 }
-export function OrderActions({ id, status }: OrderActionsProps) {
+export function OrderActions({ id}: OrderActionsProps) {
     // const handleSendReminder = () => {
     //     toast.promise(
     //         fetch(`/api/email/${id}`, {
@@ -53,7 +52,7 @@ export function OrderActions({ id, status }: OrderActionsProps) {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href={`/api/v1/order/${id}`} target="_blank">
-                        <DownloadCloudIcon className="size-4 mr-2" /> View Order
+                        <EyeIcon className="size-4 mr-2" /> View Order
                     </Link>
                 </DropdownMenuItem>
                 {/* <DropdownMenuItem onClick={handleSendReminder}>
@@ -64,9 +63,8 @@ export function OrderActions({ id, status }: OrderActionsProps) {
                         <Trash className="size-4 mr-2" /> Delete Order
                     </Link>
                 </DropdownMenuItem>
-
                 <DropdownMenuItem asChild>
-                    <Link href={`/api/v1/dashboard/invoices/${id}/assign`}>
+                    <Link href={`/api/v1/dashboard/taskAssignment`}>
                         <CheckCircle className="size-4 mr-2" /> Assign Order
                     </Link>
                 </DropdownMenuItem>

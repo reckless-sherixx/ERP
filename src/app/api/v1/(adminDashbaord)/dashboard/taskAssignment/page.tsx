@@ -17,14 +17,10 @@ async function getData() {
         select: {
             id: true,
             orderNumber: true,
-            user: {
-                select: {
-                    name: true,
-                    email: true,
-                },
-            },
-            status: true,
+            customerName: true,
+            customerEmail: true,
             customerAddress: true,
+            status: true,
             createdAt: true,
             productId: true,
             itemDescription: true,

@@ -94,7 +94,7 @@ export async function OrderList() {
                                     }).format(new Date(order.createdAt))}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <OrderActions status={order.status} id={order.id} />
+                                    <OrderActions id={order.id} />
                                 </TableCell>
                             </TableRow>
                         ))}
