@@ -1,7 +1,7 @@
 "use client"
 import { cn } from "@/lib/utils"
 import { Role } from "@prisma/client"
-import { CircleCheckBig, FileDiff, HomeIcon, NotebookText, Users2 } from "lucide-react"
+import { CircleCheckBig, FileDiff, HomeIcon, NotebookIcon,NotebookText, Users2 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -10,6 +10,7 @@ const roleBasedLinks: Record<string, Role[]> = {
     orders: [Role.SYSTEM_ADMIN, Role.ADMIN, Role.SALES],
     users: [Role.SYSTEM_ADMIN, Role.ADMIN],
     invoices: [Role.SYSTEM_ADMIN, Role.ADMIN, Role.ACCOUNTING],
+    design: [Role.SYSTEM_ADMIN, Role.ADMIN, Role.DESIGN],
     taskAssignment: [Role.SYSTEM_ADMIN, Role.ADMIN, Role.DESIGN],
 };
 
@@ -49,6 +50,13 @@ export const dashboardLinks: DashboardLink[] = [
         href: '/api/v1/dashboard/invoices',
         icon: FileDiff,
         roles: roleBasedLinks.invoices,
+    },
+    {
+        id: 5,
+        name: 'Designs',
+        href: '/api/v1/dashboard/design',
+        icon: NotebookIcon,
+        roles: roleBasedLinks.design,
     },
     {
         id: 4,

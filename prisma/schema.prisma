@@ -51,6 +51,12 @@ enum ProductionStatus {
   FINISHING
 }
 
+enum DesignStatus {
+  APPROVED 
+  REVISION
+  PENDING
+}
+
 model Account {
   id                String  @id @default(cuid())
   userId            String

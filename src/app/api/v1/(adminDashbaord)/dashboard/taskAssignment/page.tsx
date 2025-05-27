@@ -1,5 +1,5 @@
-import { TaskAssignment } from "@/components/adminDashboardComponents/DesignComponents/TaskAssignment";
-import { TaskList } from "@/components/adminDashboardComponents/DesignComponents/TaskList";
+import { TaskAssignment } from "@/components/adminDashboardComponents/AssignTaskComponents/TaskAssignment";
+import { TaskList } from "@/components/adminDashboardComponents/AssignTaskComponents/TaskList";
 import {
     Card,
     CardContent,
@@ -32,7 +32,7 @@ async function getData() {
 export default async function TaskAssignmentPage() {
     const data = await getData();
     return (
-        <Card>
+        <Card className=" border border-black/20 shadow-lg">
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <div>
@@ -43,7 +43,7 @@ export default async function TaskAssignmentPage() {
             </CardHeader>
             <CardContent>
                 <TaskAssignment initialData={data} />
-                <Card>
+                <Card className="border border-black/20 shadow-lg">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold">Orders ({`${data.length}`})</CardTitle>
                         <CardDescription>Manage and assign customer orders</CardDescription>

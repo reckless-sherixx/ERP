@@ -35,7 +35,7 @@ export function TaskAssignment({ initialData }: TaskAssignmentProps) {
 
     return (
         <>
-            <Card className="mb-6">
+            <Card className="mb-6 border border-black/20 shadow-lg">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <UserPlus className="w-5 h-5" />
