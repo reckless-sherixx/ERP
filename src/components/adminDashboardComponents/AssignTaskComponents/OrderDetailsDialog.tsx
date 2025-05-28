@@ -23,6 +23,12 @@ interface OrderDetailsDialogProps {
         totalPrice: number;
         status: string;
         shippingAddress?: string;
+        Assignee?: {
+            user: {
+                name: string | null;
+                email: string | null;
+            };
+        }[];
     };
 }
 
@@ -78,7 +84,18 @@ export function OrderDetailsDialog({ isOpen, onClose, order }: OrderDetailsDialo
                         </div>
                         <div>
                             <h3 className="text-sm font-semibold text-muted-foreground mb-2">Assigned To</h3>
-                            <p className="text-sm">Unassigned</p>
+                            {order.Assignee && order.Assignee.length > 0 ? (
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium">
+                                        {order.Assignee[0].user.name}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {order.Assignee[0].user.email}
+                                    </p>
+                                </div>
+                            ) : (
+                                <p className="text-sm">Unassigned</p>
+                            )}
                         </div>
                     </div>
 

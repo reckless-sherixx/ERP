@@ -39,6 +39,7 @@ export const orderSchema = z.object({
     itemQuantity: z.number().min(1, "Quantity min 1"),
     itemRate: z.number().min(1, "Rate min 1"),
     estimatedDelivery: z.string().min(1, "Date is required"),
+    attachment:z.string().optional(),
     note: z.string().optional(),    
 });
 

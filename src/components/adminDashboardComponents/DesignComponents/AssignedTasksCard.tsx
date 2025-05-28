@@ -4,33 +4,27 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, UserPlus } from "lucide-react";
-import { AssignOrderDialog } from "./AssignOrderDialog";
-import { OrderDetailsDialog } from "./OrderDetailsDialog";
+import { OrderDetailsDialog } from "../AssignTaskComponents/OrderDetailsDialog";
 import { OrderStatus } from "@prisma/client";
 
 interface Order {
     id: string;
     orderNumber: string;
     customerName: string;
-    customerEmail: string | null;  
+    customerEmail: string | null;
     customerAddress: string;
     createdAt: Date;
     itemDescription: string;
     totalPrice: number;
-    status: OrderStatus;  
-    productId: string | null;  
+    status: OrderStatus;
+    productId: string | null;
 }
 
-interface TaskAssignmentProps {
+interface AssignedTasksCardProps {
     initialData: Order[];
 }
 
-export function TaskAssignment({ initialData }: TaskAssignmentProps) {
-    const [selectedOrder, setSelectedOrder] = useState<{
-        id: string;
-        orderNumber: string;
-    } | null>(null);
-
+export function AssignedTasksCard({ initialData }: AssignedTasksCardProps) {
     const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
 
     return (
@@ -39,24 +33,24 @@ export function TaskAssignment({ initialData }: TaskAssignmentProps) {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <UserPlus className="w-5 h-5" />
-                        Available Orders for Assignment
+                        Your Assigned Tasks
                     </CardTitle>
                     <CardDescription>
-                        Orders that need to be assigned to team members ({initialData.length} orders)
+                        Tasks assigned to you that need to be completed
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {/* UnAssigned Orders */}
+                    {/* Assigned Orders */}
                     <div className="space-y-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {initialData.map((order) => (
-                            <div key={order.id} className="border rounded-lg p-6">
+                            <div key={order.id} className="border border-black/20 shadow-md rounded-lg p-6">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-4">
                                         <div>
                                             <h3 className="font-medium">{order.orderNumber}</h3>
                                             <div className="flex items-center gap-2 mt-1">
                                                 <span className="text-sm text-muted-foreground">
-                                                    {order.status.toLowerCase()}
+                                                    Pending
                                                 </span>
                                                 •
                                                 <span className="text-sm text-muted-foreground">
@@ -92,7 +86,7 @@ export function TaskAssignment({ initialData }: TaskAssignmentProps) {
                                         >
                                             <Eye className="h-4 w-4" />
                                         </Button>
-                                        <Button
+                                        {/* <Button
                                             onClick={() => setSelectedOrder({
                                                 id: order.id,
                                                 orderNumber: order.orderNumber
@@ -100,7 +94,7 @@ export function TaskAssignment({ initialData }: TaskAssignmentProps) {
                                         >
                                             <UserPlus className="h-4 w-4 mr-2" />
                                             Assign
-                                        </Button>
+                                        </Button> */}
                                     </div>
                                 </div>
                             </div>
@@ -109,22 +103,12 @@ export function TaskAssignment({ initialData }: TaskAssignmentProps) {
                 </CardContent>
             </Card>
 
-            {/* Assign order dialog box */}
-            {selectedOrder && (
-                <AssignOrderDialog
-                    isOpen={!!selectedOrder}
-                    onClose={() => setSelectedOrder(null)}
-                    orderId={selectedOrder.id}
-                    orderNumber={selectedOrder.orderNumber}
-                />
-            )}
-
             {/* View order dialog box */}
             {viewingOrder && (
                 <OrderDetailsDialog
                     isOpen={!!viewingOrder}
                     onClose={() => setViewingOrder(null)}
-                    order={viewingOrder }
+                    order={viewingOrder}
                 />
             )}
         </>

@@ -11,7 +11,7 @@ const roleBasedLinks: Record<string, Role[]> = {
     users: [Role.SYSTEM_ADMIN, Role.ADMIN],
     invoices: [Role.SYSTEM_ADMIN, Role.ADMIN, Role.ACCOUNTING],
     design: [Role.SYSTEM_ADMIN, Role.ADMIN, Role.DESIGN],
-    taskAssignment: [Role.SYSTEM_ADMIN, Role.ADMIN, Role.DESIGN],
+    taskAssignment: [Role.SYSTEM_ADMIN, Role.ADMIN],
 };
 
 interface DashboardLink {

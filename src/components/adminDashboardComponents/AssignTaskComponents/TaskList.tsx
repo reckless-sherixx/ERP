@@ -109,6 +109,7 @@ export async function TaskList() {
                                             totalPrice: order.totalPrice,
                                             status: order.status,
                                             shippingAddress: order.customerAddress,
+                                            Assignee:order.Assignee,
                                         }}
                                     />
                                 </TableCell>

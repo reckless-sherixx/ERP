@@ -13,13 +13,14 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon } from "lucide-react";
-import { useActionState, useState } from "react"; 
+import { useActionState, useState } from "react";
 import { SubmitButton } from "../../general/SubmitButton";
 import { createOrder } from "../../../actions";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { orderSchema } from "@/app/utils/zodSchemas";
 import { formatCurrency } from "@/app/utils/formatCurrency";
+import { UploadButton } from "@/components/general/UploadButton";
 
 
 export function CreateOrder() {
@@ -41,6 +42,7 @@ export function CreateOrder() {
     const [rate, setRate] = useState("");
     const [quantity, setQuantity] = useState("");
     const [productId, setProductId] = useState("");
+    const [attachment, setAttachment] = useState<string>();
 
     const calculateTotal = (Number(quantity) || 0) * (Number(rate) || 0);
 
@@ -59,6 +61,11 @@ export function CreateOrder() {
                         type="hidden"
                         name="estimatedDelivery"
                         value={selectedDate.toISOString()}
+                    />
+                    <input
+                        type="hidden"
+                        name="attachment"
+                        value={attachment}
                     />
                     <input
                         type="hidden"
@@ -115,7 +122,7 @@ export function CreateOrder() {
                             </div>
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button 
+                                    <Button
                                         variant="outline"
                                         className="w-[280px] text-left justify-start"
                                     >
@@ -141,67 +148,67 @@ export function CreateOrder() {
                     </div>
 
                     {/* Order Items */}
-                        <div>
-                            <div className="grid grid-cols-12 gap-4 mb-2 font-medium">
-                                <p className="col-span-2">Product Id</p>
-                                <p className="col-span-2">Quantity</p>
-                                <p className="col-span-2">Rate</p>
-                                <p className="col-span-6">Description</p>
-                            </div>
+                    <div>
+                        <div className="grid grid-cols-12 gap-4 mb-2 font-medium">
+                            <p className="col-span-2">Product Id</p>
+                            <p className="col-span-2">Quantity</p>
+                            <p className="col-span-2">Rate</p>
+                            <p className="col-span-6">Description</p>
+                        </div>
 
-                            <div className="grid grid-cols-12 gap-4 mb-4">
-                                <div className="col-span-2">
-                                    <Input
-                                        name={fields.productId.name}
-                                        key={fields.productId.key}
-                                        value={productId}
-                                        onChange={(e) => setProductId(e.target.value)}
-                                        type="string"
-                                        placeholder="Enter Product ID"
-                                    />
-                                    <p className="text-red-500 text-sm">
-                                        {fields.productId.errors}
-                                    </p>
-                                </div>
-                                <div className="col-span-2">
-                                    <Input
-                                        name={fields.itemQuantity.name}
-                                        key={fields.itemQuantity.key}
-                                        type="number"
-                                        placeholder="0"
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(e.target.value)}
-                                    />
-                                    <p className="text-red-500 text-sm">
-                                        {fields.itemQuantity.errors}
-                                    </p>
-                                </div>
-                                <div className="col-span-2">
-                                    <Input
-                                        name={fields.itemRate.name}
-                                        key={fields.itemRate.key}
-                                        value={rate}
-                                        onChange={(e) => setRate(e.target.value)}
-                                        type="number"
-                                        placeholder="0"
-                                    />
-                                    <p className="text-red-500 text-sm">
-                                        {fields.itemRate.errors}
-                                    </p>
-                                </div>
-                                <div className="col-span-6">
-                                    <Textarea
-                                        name={fields.itemDescription.name}
-                                        key={fields.itemDescription.key}
-                                        defaultValue={fields.itemDescription.initialValue}
-                                        placeholder="Item name & description"
-                                    />
-                                    <p className="text-red-500 text-sm">
-                                        {fields.itemDescription.errors}
-                                    </p>
-                                </div>
+                        <div className="grid grid-cols-12 gap-4 mb-4">
+                            <div className="col-span-2">
+                                <Input
+                                    name={fields.productId.name}
+                                    key={fields.productId.key}
+                                    value={productId}
+                                    onChange={(e) => setProductId(e.target.value)}
+                                    type="string"
+                                    placeholder="Enter Product ID"
+                                />
+                                <p className="text-red-500 text-sm">
+                                    {fields.productId.errors}
+                                </p>
+                            </div>
+                            <div className="col-span-2">
+                                <Input
+                                    name={fields.itemQuantity.name}
+                                    key={fields.itemQuantity.key}
+                                    type="number"
+                                    placeholder="0"
+                                    value={quantity}
+                                    onChange={(e) => setQuantity(e.target.value)}
+                                />
+                                <p className="text-red-500 text-sm">
+                                    {fields.itemQuantity.errors}
+                                </p>
+                            </div>
+                            <div className="col-span-2">
+                                <Input
+                                    name={fields.itemRate.name}
+                                    key={fields.itemRate.key}
+                                    value={rate}
+                                    onChange={(e) => setRate(e.target.value)}
+                                    type="number"
+                                    placeholder="0"
+                                />
+                                <p className="text-red-500 text-sm">
+                                    {fields.itemRate.errors}
+                                </p>
+                            </div>
+                            <div className="col-span-6">
+                                <Textarea
+                                    name={fields.itemDescription.name}
+                                    key={fields.itemDescription.key}
+                                    defaultValue={fields.itemDescription.initialValue}
+                                    placeholder="Item name & description"
+                                />
+                                <p className="text-red-500 text-sm">
+                                    {fields.itemDescription.errors}
+                                </p>
                             </div>
                         </div>
+                    </div>
                     {/* </div> */}
                     <div className="flex justify-end">
                         <div className="w-1/3">
@@ -216,6 +223,15 @@ export function CreateOrder() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Attachment */}
+                    <div className="mb-6">
+                        <UploadButton
+                            onChange={(url:any) => setAttachment(url)}
+                            value={attachment}
+                        />
+                    </div>
+
 
                     <div>
                         <Label>Note</Label>

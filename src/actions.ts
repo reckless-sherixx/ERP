@@ -198,6 +198,7 @@ export async function createOrder(prevState: any, formData: FormData) {
       status: submission.value.status,
       productId: submission.value.productId,
       totalPrice: submission.value.totalPrice,
+      attachment:submission.value.attachment,
       note: submission.value.note,
       userId: session.user?.id,
 

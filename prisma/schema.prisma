@@ -52,7 +52,7 @@ enum ProductionStatus {
 }
 
 enum DesignStatus {
-  APPROVED 
+  APPROVED
   REVISION
   PENDING
 }
@@ -131,6 +131,7 @@ model Order {
   updatedAt            DateTime         @updatedAt
   estimatedDelivery    DateTime?
   note                 String?
+  attachment           String?
   isApprovedByCustomer Boolean?         @default(false)
   isApprovedByAdmin    Boolean?         @default(false)
   isAssigned           Boolean?         @default(false)
@@ -142,10 +143,11 @@ model Order {
 }
 
 model Assignee {
-  id         String   @id @default(uuid())
+  id         String       @id @default(uuid())
   orderId    String
   userId     String
-  assignedAt DateTime @default(now())
+  status     DesignStatus @default(PENDING)
+  assignedAt DateTime     @default(now())
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)

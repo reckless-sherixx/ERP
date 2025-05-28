@@ -15,7 +15,7 @@ import {
 import { useState } from "react";
 import { OrderDetailsDialog } from "./OrderDetailsDialog";
 import { AssignOrderDialog } from "./AssignOrderDialog";
-
+    
 interface TaskActionsProps {
     id: string;
     order: {
@@ -28,6 +28,12 @@ interface TaskActionsProps {
         totalPrice: number;
         status: string;
         shippingAddress?: string;
+         Assignee?: {
+            user: {
+                name: string | null;
+                email: string | null;
+            };
+        }[];
     };
 }
 
