@@ -209,6 +209,14 @@ export function CreateOrder() {
                             </div>
                         </div>
                     </div>
+                    {/* Attachment */}
+                    <div className="mb-6" >
+                        <UploadButton
+                            onChange={(url:any) => setAttachment(url)}
+                            value={attachment}
+                        />
+                    </div>
+                                        
                     {/* </div> */}
                     <div className="flex justify-end">
                         <div className="w-1/3">
@@ -223,16 +231,6 @@ export function CreateOrder() {
                             </div>
                         </div>
                     </div>
-
-                    {/* Attachment */}
-                    <div className="mb-6">
-                        <UploadButton
-                            onChange={(url:any) => setAttachment(url)}
-                            value={attachment}
-                        />
-                    </div>
-
-
                     <div>
                         <Label>Note</Label>
                         <Textarea

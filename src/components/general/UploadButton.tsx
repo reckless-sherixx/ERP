@@ -16,20 +16,21 @@ export function UploadButton({ onChange, value }: UploadButtonProps) {
     if (value) {
         return (
             <div className="flex flex-col gap-2">
-                <div className="relative h-48 w-48">
+            <Label className="mb-2">Attachment</Label>   
+                <div className="relative h-32 w-32">
                     <Image
                         src={value}
                         alt="Order Image"
-                        className="object-cover rounded-md"
+                        className="object-cover"
                         fill
                     />
                     <Button
                         onClick={() => onChange(undefined)}
                         variant="destructive"
-                        size="icon"
-                        className="absolute -top-2 -right-2"
+                        size="sm"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-md "
                     >
-                        <X className="h-4 w-4" />
+                        <X className="h-3 w-3" />
                     </Button>
                 </div>
             </div>
@@ -38,7 +39,7 @@ export function UploadButton({ onChange, value }: UploadButtonProps) {
 
     return (
         <div className="flex flex-col gap-2">
-            <Label>Order Image</Label>
+            <Label>Upload Attachment(Reference)</Label>
             <UploadDropzone<OurFileRouter, "imageUploader">
                 endpoint="imageUploader"
                 onClientUploadComplete={(res) => {
@@ -49,8 +50,9 @@ export function UploadButton({ onChange, value }: UploadButtonProps) {
                 onUploadError={(error: Error) => {
                     console.error(error);
                 }}
-                className="ut-button:bg-primary ut-button:text-white ut-button:hover:bg-primary/90 ut-label:text-muted-foreground ut-allowed-content:text-muted-foreground border-primary"
+                className="ut-button:bg-primary ut-button:text-white ut-button:p-4 ut-button:hover:bg-primary/90 ut-button:rounded-md ut-label:text-muted-foreground ut-allowed-content:text-muted-foreground ut- border-primary h-[250px] max-w-full p-2"
             />
+            
         </div>
     );
 }
