@@ -1,0 +1,6 @@
+# Dependencies
+node_modules
+pnpm-lock.yaml
+yarn.lock
+npm-debug.log
+*.log
