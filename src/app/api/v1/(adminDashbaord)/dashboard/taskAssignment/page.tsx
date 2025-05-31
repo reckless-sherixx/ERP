@@ -20,6 +20,7 @@ async function getData() {
             customerName: true,
             customerEmail: true,
             customerAddress: true,
+            attachment: true,
             status: true,
             createdAt: true,
             productId: true,

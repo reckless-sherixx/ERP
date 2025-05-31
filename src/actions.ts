@@ -1,6 +1,10 @@
-"use server"
+"use server";
 import { requireUser } from "@/app/utils/hooks";
-import { inventorySchema, invoiceSchema, orderSchema } from "@/app/utils/zodSchemas";
+import {
+  inventorySchema,
+  invoiceSchema,
+  orderSchema,
+} from "@/app/utils/zodSchemas";
 import { parseWithZod } from "@conform-to/zod";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
@@ -198,10 +202,9 @@ export async function createOrder(prevState: any, formData: FormData) {
       status: submission.value.status,
       productId: submission.value.productId,
       totalPrice: submission.value.totalPrice,
-      attachment:submission.value.attachment,
+      attachment: submission.value.attachment,
       note: submission.value.note,
       userId: session.user?.id,
-
     },
   });
   return redirect("/api/v1/dashboard/orders");
@@ -255,7 +258,7 @@ export async function DeleteOrder(orderId: string) {
   return redirect("/api/v1/dashboard/orders");
 }
 
-//Inventory actions 
+//Inventory actions
 export async function addMaterial(prevState: any, formData: FormData) {
   const session = await requireUser();
 
@@ -267,25 +270,21 @@ export async function addMaterial(prevState: any, formData: FormData) {
     return submission.reply();
   }
 
-
   const materialCount = await prisma.inventoryItem.count();
-  const materialId = `MAT-${(materialCount + 1)
-    .toString()
-    .padStart(4, "0")}`;
+  const materialId = `MAT-${(materialCount + 1).toString().padStart(4, "0")}`;
 
   //Determine stock status based on current stock and reorder stock
   const currentStock = submission.value.currentStock;
   const reorderPoint = submission.value.reorderPoint;
   let stockStatus;
 
-  if(currentStock === 0) {
+  if (currentStock === 0) {
     stockStatus = InventoryStockStatus.OUT_OF_STOCK;
-  } else if(currentStock <= reorderPoint){
-    stockStatus =InventoryStockStatus.LOW_STOCK;
+  } else if (currentStock <= reorderPoint) {
+    stockStatus = InventoryStockStatus.LOW_STOCK;
   } else {
     stockStatus = InventoryStockStatus.IN_STOCK;
   }
-
 
   await prisma.inventoryItem.create({
     data: {
@@ -301,5 +300,4 @@ export async function addMaterial(prevState: any, formData: FormData) {
     },
   });
   return redirect("/api/v1/factory/dashboard/inventory");
-
 }

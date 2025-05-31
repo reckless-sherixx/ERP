@@ -15,6 +15,7 @@ import { EmptyState } from "../../general/EmptyState";
 import { Role } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
+import Link from "next/link";
 
 async function getData(userId: string, userRole: Role) {
   if (userRole === Role.SYSTEM_ADMIN || userRole === Role.ADMIN) {
@@ -103,15 +104,17 @@ export async function OrderList() {
                 </TableCell>
                 <TableCell>
                   {order.attachment ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                     
-                    >
-                      <FileText className="mr-1 h-4 w-4" />Attachment 
+                    <Button asChild size="sm" variant="outline">
+                      <Link href={order.attachment} target="_blank">
+                        <FileText className="mr-1 h-4 w-4" />
+                        Attachment
+                      </Link>
                     </Button>
                   ) : (
-                    <span className="text-gray-500">No Attachment</span>
+                    <Button size="sm" variant="outline" disabled>
+                      <FileText className="mr-1 h-4 w-4" />
+                      No Attachment
+                    </Button>
                   )}
                 </TableCell>
                 <TableCell className="text-right">
