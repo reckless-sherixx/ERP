@@ -112,6 +112,7 @@ model User {
   Order         Order[]
   InventoryItem InventoryItem[]
   Assignee      Assignee[]
+  Notification  Notification[]
 }
 
 model Order {
@@ -209,16 +210,18 @@ model InventoryItem {
 }
 
 model Notification {
-  id         String  @id @default(uuid())
+  id         String   @id @default(cuid())
   templateId String
   channels   String
   subject    String
   content    Json
   status     String
   userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  @@index([userId])
 }
 
 model DesignRevision {

@@ -11,6 +11,7 @@ import { redirect } from "next/navigation";
 import { emailClient } from "./app/utils/mailtrap";
 import { formatCurrency } from "./app/utils/formatCurrency";
 import { InventoryStockStatus } from "@prisma/client";
+import { createOrderNotification } from "./app/utils/notifcationService";
 
 //Invoice Actions
 export async function createInvoice(prevState: any, formData: FormData) {
@@ -183,12 +184,10 @@ export async function createOrder(prevState: any, formData: FormData) {
     return submission.reply();
   }
 
-  const orderCount = await prisma.order.count();
-  const orderNumber = `ORD-${new Date().getFullYear()}-${(orderCount + 1)
-    .toString()
-    .padStart(4, "0")}`;
+  const timestamp = Date.now();
+  const orderNumber = `ORD-${new Date().getFullYear()}-${timestamp.toString().slice(-4)}`;
 
-  await prisma.order.create({
+  const newOrder = await prisma.order.create({
     data: {
       orderNumber,
       customerAddress: submission.value.customerAddress,
@@ -206,7 +205,58 @@ export async function createOrder(prevState: any, formData: FormData) {
       note: submission.value.note,
       userId: session.user?.id,
     },
+    select: {
+      orderNumber: true,
+      customerName: true,
+      totalPrice: true,
+      user: {
+        select: {
+          name: true,
+          role: true,
+        },
+      },
+    },
   });
+ try {
+    const notificationData = {
+      type: 'orderNotification',
+      data: {
+        orderNumber: newOrder.orderNumber,
+        customerName: newOrder.customerName,
+        totalPrice: newOrder.totalPrice,
+        createdBy: newOrder.user?.name || "Unknown"
+      }
+    };
+
+    // Use full URL for the fetch request
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/socket`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(notificationData)
+    });
+
+    const notificationSent = await createOrderNotification(notificationData);
+    
+    if (!notificationSent) {
+      console.error("Failed to send notification");
+    }
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Failed to send notification:", errorText);
+      throw new Error(`Failed to send notification: ${errorText}`);
+    }
+
+    const result = await response.json();
+    console.log("Notification sent successfully:", result);
+
+  } catch (error) {
+    console.error("Error sending notification:", error);
+  }
+
   return redirect("/api/v1/dashboard/orders");
 }
 

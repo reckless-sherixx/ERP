@@ -79,48 +79,50 @@ export function AdminDashboardNavigationDropdown({ userRole }: AdminDashboardNav
     );
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-[200px] justify-between"
-                >
-                    {currentDashboard?.label || "Select Dashboard..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
-                <Command>
-                    <CommandInput placeholder="Search dashboard..." />
-                    <CommandList>
-                        <CommandEmpty>No dashboard found.</CommandEmpty>
-                        <CommandGroup>
-                            {availableDashboards.map((dashboard) => (
-                                <CommandItem
-                                    key={dashboard.value}
-                                    value={dashboard.value}
-                                    onSelect={() => {
-                                        router.push(dashboard.href);
-                                        setOpen(false);
-                                    }}
-                                >
-                                    <Check
-                                        className={cn(
-                                            "mr-2 h-4 w-4",
-                                            currentView === dashboard.value
-                                                ? "opacity-100"
-                                                : "opacity-0"
-                                        )}
-                                    />
-                                    {dashboard.label}
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
-                    </CommandList>
-                </Command>
-            </PopoverContent>
-        </Popover>
+        <div className="flex items-center gap-4">
+            <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                    <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        className="w-[200px] justify-between"
+                    >
+                        {currentDashboard?.label || "Select Dashboard..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-0">
+                    <Command>
+                        <CommandInput placeholder="Search dashboard..." />
+                        <CommandList>
+                            <CommandEmpty>No dashboard found.</CommandEmpty>
+                            <CommandGroup>
+                                {availableDashboards.map((dashboard) => (
+                                    <CommandItem
+                                        key={dashboard.value}
+                                        value={dashboard.value}
+                                        onSelect={() => {
+                                            router.push(dashboard.href);
+                                            setOpen(false);
+                                        }}
+                                    >
+                                        <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                currentView === dashboard.value
+                                                    ? "opacity-100"
+                                                    : "opacity-0"
+                                            )}
+                                        />
+                                        {dashboard.label}
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            </Popover>
+        </div>
     )
 }

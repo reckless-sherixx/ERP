@@ -20,6 +20,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { hasAdminDashboardAccess } from "@/app/utils/dashboardAccess";
 import { redirect } from "next/navigation";
 import { Role } from "@prisma/client";
+import { NotificationComponent } from "@/components/general/Notification";
 
 
 export default async function DashboardLayout({
@@ -66,8 +67,8 @@ export default async function DashboardLayout({
                                 </nav>
                             </SheetContent>
                         </Sheet>
-
                         <div className="flex items-center ml-auto">
+                            <NotificationComponent />
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button
