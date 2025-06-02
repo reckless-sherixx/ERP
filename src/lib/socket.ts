@@ -1,46 +1,41 @@
-import { Server as SocketIOServer } from 'socket.io';
-import { createServer } from 'http';
-import type { Server as HTTPServer } from 'http';
+import { io as SocketIOClient } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
 
-let io: SocketIOServer | null = null;
-let httpServer: HTTPServer;
+let socket: Socket | null = null;
 
-export const initSocketServer = () => {
-  if (!io) {
-    httpServer = createServer();
-    
-    io = new SocketIOServer(httpServer, {
-      cors: {
-        origin: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-        methods: ['GET', 'POST'],
-        credentials: true,
-      },
-      path: '/socket.io/',
-      transports: ['polling', 'websocket'],
-      addTrailingSlash: false,
+export const initSocketClient = () => {
+  if (!socket && typeof window !== 'undefined') {
+    const url = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
+    console.log('Initializing socket connection to:', url);
+
+    socket = SocketIOClient(url, {
+      path: '/socket.io',
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      autoConnect: true,
+      withCredentials: true,
+      reconnection: true,
+      forceNew: false,
+      timeout: 10000
     });
 
-    io.on('connection', (socket) => {
-      console.log('Client connected:', socket.id);
-
-      socket.on('authenticate', async (userId: string) => {
-        try {
-          socket.join('admins');
-          console.log(`User ${userId} authenticated and joined admins room`);
-        } catch (error) {
-          console.error('Authentication error:', error);
-        }
-      });
-
-      socket.on('disconnect', () => {
-        console.log('Client disconnected:', socket.id);
-      });
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error.message);
     });
 
-    const port = parseInt(process.env.SOCKET_PORT || '3001', 10);
-    httpServer.listen(port, () => {
-      console.log(`Socket.IO server running on port ${port}`);
+    socket.on('error', (error) => {
+      console.error('Socket error:', error);
+    });
+
+    socket.io.on('reconnect_attempt', () => {
+      console.log('Attempting to reconnect...');
+    });
+
+    socket.io.on('reconnect', (attempt) => {
+      console.log('Reconnected after', attempt, 'attempts');
     });
   }
-  return io;
+  
+  return socket;
 };

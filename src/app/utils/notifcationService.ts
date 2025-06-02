@@ -1,6 +1,6 @@
-import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { initSocketServer } from "@/lib/socket";
+import axios from "axios";
+import { Role } from "@prisma/client";
 
 export interface OrderNotification {
   type: string;
@@ -16,22 +16,7 @@ export async function createOrderNotification(notification: OrderNotification) {
   try {
     console.log("Creating notification:", notification);
 
-    // Store notification in database
-    const baseNotification = await prisma.notification.create({
-      data: {
-        templateId: "order_created",
-        channels: "websocket",
-        subject: "New Order Created",
-        content: notification.data,
-        status: "UNREAD",
-        updatedAt: new Date(), // Add this line
-        createdAt: new Date()  // Add this line
-      }
-    });
-
-    console.log("Base notification created:", baseNotification);
-
-    // Get all admin users
+    // Get only admin users
     const adminUsers = await prisma.user.findMany({
       where: {
         role: {
@@ -39,14 +24,15 @@ export async function createOrderNotification(notification: OrderNotification) {
         }
       },
       select: {
-        id: true
+        id: true,
+        role: true
       }
     });
 
     console.log("Found admin users:", adminUsers);
 
-    // Create notification records for each admin
-    const userNotifications = await Promise.all(
+    // Store notifications only for admin users
+    await Promise.all(
       adminUsers.map((user) =>
         prisma.notification.create({
           data: {
@@ -55,24 +41,49 @@ export async function createOrderNotification(notification: OrderNotification) {
             subject: "New Order Created",
             content: notification.data,
             status: "UNREAD",
-            userId: user.id,
-            updatedAt: new Date(), // Add this line
-            createdAt: new Date()  // Add this line
+            userId: user.id
           }
         })
       )
     );
 
-    console.log("User notifications created:", userNotifications);
+    // Emit socket notification with retries
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryDelay = 2000;
 
-    // Emit socket notification
-    const io = initSocketServer();
-    if (io) {
-      io.to('admins').emit('orderNotification', notification.data);
-      console.log("Socket notification emitted to admins");
+    while (retryCount < maxRetries) {
+      try {
+        const socketResponse = await axios.post('http://localhost:3001/notify', {
+          event: 'orderNotification',
+          data: {
+            ...notification,
+            forAdminsOnly: true
+          }
+        }, {
+          timeout: 5000
+        });
+
+        if (socketResponse.data.success) {
+          console.log(`Notification sent to ${socketResponse.data.clientCount} admin users`);
+          return true;
+        }
+
+        console.log("Retrying notification delivery...");
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        retryCount++;
+      } catch (error) {
+        console.error(`Notification retry ${retryCount + 1} failed:`, error);
+        retryCount++;
+        if (retryCount === maxRetries) {
+          console.error("Max retries reached");
+          return false;
+        }
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
     }
 
-    return true;
+    return false;
   } catch (error) {
     console.error("Error creating notification:", error);
     return false;

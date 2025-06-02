@@ -228,30 +228,14 @@ export async function createOrder(prevState: any, formData: FormData) {
       }
     };
 
-    // Use full URL for the fetch request
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/socket`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(notificationData)
-    });
-
+    // Only use createOrderNotification which handles both database storage and socket emission
     const notificationSent = await createOrderNotification(notificationData);
     
     if (!notificationSent) {
       console.error("Failed to send notification");
+    } else {
+      console.log("Notification sent successfully");
     }
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Failed to send notification:", errorText);
-      throw new Error(`Failed to send notification: ${errorText}`);
-    }
-
-    const result = await response.json();
-    console.log("Notification sent successfully:", result);
 
   } catch (error) {
     console.error("Error sending notification:", error);

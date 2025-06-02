@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SocketProvider } from "@/context/SocketContext";
 import { SessionProvider } from "next-auth/react";
+import { auth } from "@/app/utils/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,17 +20,17 @@ export const metadata: Metadata = {
   description: "Developed By Vidyansh",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <SessionProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <SessionProvider session={session}>
           <SocketProvider>
             {children}
           </SocketProvider>

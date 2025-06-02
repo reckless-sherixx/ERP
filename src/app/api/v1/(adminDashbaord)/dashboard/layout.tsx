@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { requireUser } from "@/app/utils/hooks";
+import { auth, signOut } from "@/app/utils/auth";
 import Link from "next/link";
 import Logo from "../../../../../../public/logo.png";
 import Image from "next/image";
@@ -15,23 +15,29 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { signOut } from "@/app/utils/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { hasAdminDashboardAccess } from "@/app/utils/dashboardAccess";
 import { redirect } from "next/navigation";
 import { Role } from "@prisma/client";
 import { NotificationComponent } from "@/components/general/Notification";
 
-
 export default async function DashboardLayout({
     children,
 }: {
     children: ReactNode;
 }) {
-    const session = await requireUser();
-    if (!hasAdminDashboardAccess(session.user?.role)) {
-        redirect("/customer-dashboard"); // Redirect to home or customer dashboard if unauthorized
+    const session = await auth();
+    
+    if (!session?.user) {
+        redirect("/login");
     }
+
+    if (!hasAdminDashboardAccess(session.user.role)) {
+        redirect("/customer-dashboard");
+    }
+
+    const isAdmin = session.user.role === Role.SYSTEM_ADMIN || session.user.role === Role.ADMIN;
+
     return (
         <>
             <div className="grid min-h-screen w-full md:gird-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -68,7 +74,7 @@ export default async function DashboardLayout({
                             </SheetContent>
                         </Sheet>
                         <div className="flex items-center ml-auto">
-                            <NotificationComponent />
+                           {isAdmin && <NotificationComponent />}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button

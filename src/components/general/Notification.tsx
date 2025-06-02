@@ -1,152 +1,201 @@
 "use client";
 
 import { useSocket } from "@/context/SocketContext";
+import { Button } from "../ui/button";
+import { BellRing } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Bell, Trash } from "lucide-react";
-import { Button } from "../ui/button";
 import { formatCurrency } from "@/app/utils/formatCurrency";
 import { useSession } from "next-auth/react";
-import { format } from "date-fns";
+import { Role } from "@prisma/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { ScrollArea } from "../ui/scroll-area";
-
-interface OrderNotification {
+} from "@/components/ui/dropdown-menu";
+import { format } from "date-fns";
+import { ScrollArea } from "@/components/ui/scroll-area";
+interface DisplayNotification {
+  id: string;
   orderNumber: string;
   customerName: string;
   totalPrice: number;
   createdBy: string;
-  timestamp?: Date;
+  timestamp: Date;
+}
+
+interface RoomInfo {
+  connectedUsers: number;
+  room: string;
 }
 
 export function NotificationComponent() {
-  const { socket, isConnected } = useSocket();
-  const { data: session } = useSession();
-  const [notifications, setNotifications] = useState<OrderNotification[]>([]);
+  const { socket, isConnected, reconnect } = useSocket();
+  const { data: session, status } = useSession();
+  const [notifications, setNotifications] = useState<DisplayNotification[]>([]);
+  const [roomInfo, setRoomInfo] = useState<RoomInfo>({ connectedUsers: 0, room: '' });
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  // Fetch existing notifications
+  const isAdmin = session?.user?.role === Role.SYSTEM_ADMIN || session?.user?.role === Role.ADMIN;
+
   useEffect(() => {
-    const fetchNotifications = async () => {
-      if (!session?.user?.id) return;
-      
-      try {
-        const response = await fetch('/api/notifications');
-        const data = await response.json();
-        if (data.notifications) {
-          setNotifications(data.notifications.map((n: any) => ({
-            ...n.content,
-            timestamp: new Date(n.createdAt)
-          })));
-        }
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
+    // Load saved notifications
+    if (typeof window !== 'undefined' && isAdmin) {
+      const savedNotifications = localStorage.getItem('adminNotifications');
+      if (savedNotifications) {
+        setNotifications(JSON.parse(savedNotifications));
       }
+    }
+
+    // Reconnect socket if needed
+    if (!isConnected && isAdmin) {
+      reconnect();
+    }
+  }, [isAdmin, isConnected, reconnect]);
+
+  useEffect(() => {
+    if (!socket || !isConnected || !session?.user || !isAdmin) return;
+
+    const handleRoomUpdate = (data: any) => {
+      console.log('Room update received:', data);
+      setRoomInfo({
+        connectedUsers: data.userCount,
+        room: data.room
+      });
     };
 
-    fetchNotifications();
-  }, [session?.user?.id]);
+    const handleNotification = (payload: any) => {
+      console.log('New notification received:', payload);
 
-  // Handle real-time notifications
-  useEffect(() => {
-    if (!socket || !session?.user?.id) return;
-
-    console.log("Setting up socket connection...");
-    socket.emit("authenticate", session.user.id);
-
-    const handleNotification = (notification: OrderNotification) => {
-      console.log('Received notification:', notification);
-      
-      const notificationWithTimestamp = {
-        ...notification,
+      const newNotification: DisplayNotification = {
+        id: crypto.randomUUID(),
+        orderNumber: payload.data.orderNumber,
+        customerName: payload.data.customerName,
+        totalPrice: payload.data.totalPrice,
+        createdBy: payload.data.createdBy,
         timestamp: new Date()
       };
-      
+
+      setNotifications(prev => {
+        const updated = [newNotification, ...prev];
+        localStorage.setItem('adminNotifications', JSON.stringify(updated));
+        return updated;
+      });
+
+      setUnreadCount(prev => prev + 1);
+
       toast.message("New Order Created!", {
         description: (
           <div className="flex flex-col gap-1">
-            <p>Order #{notification.orderNumber}</p>
-            <p>Customer: {notification.customerName}</p>
-            <p>Amount: {formatCurrency({ amount: notification.totalPrice, currency: "INR" })}</p>
-            <p>Created by: {notification.createdBy}</p>
+            <p>Order #{newNotification.orderNumber}</p>
+            <p>Customer: {newNotification.customerName}</p>
+            <p>Amount: {formatCurrency({ amount: newNotification.totalPrice, currency: "INR" })}</p>
+            <p>Created by: {newNotification.createdBy}</p>
           </div>
         ),
       });
-      
-      setNotifications(prev => [notificationWithTimestamp, ...prev]);
     };
 
+    socket.on('room-updated', handleRoomUpdate);
     socket.on('orderNotification', handleNotification);
 
     return () => {
+      socket.off('room-updated', handleRoomUpdate);
       socket.off('orderNotification', handleNotification);
     };
-  }, [socket, session?.user?.id]);
+  }, [socket, isConnected, session, isAdmin]);
+  const handleMarkAsRead = () => {
+    setUnreadCount(0);
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+    localStorage.removeItem('adminNotifications');
+  };
+
+  if (status === 'loading' || !isAdmin) {
+    return null;
+  }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative">
-          <Bell className="h-5 w-5" />
-          {notifications.length > 0 && (
-            <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] flex items-center justify-center text-white">
-              {notifications.length}
-            </div>
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
-        <div className="flex items-center justify-between p-2 border-b">
-          <p className="font-medium">Notifications</p>
-          {notifications.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setNotifications([])}
-              className="h-8 text-xs"
-            >
-              <Trash className="h-4 w-4 mr-1" />
-              Clear all
-            </Button>
-          )}
-        </div>
-        <ScrollArea className="h-[300px]">
-          {notifications.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              No notifications
-            </div>
-          ) : (
-            <div className="p-2 grid gap-2">
-              {notifications.map((notification, index) => (
-                <div
-                  key={index}
-                  className="p-2 border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex justify-between items-start mb-1">
-                    <p className="font-medium">Order #{notification.orderNumber}</p>
-                    {notification.timestamp && (
-                      <span className="text-xs text-muted-foreground">
-                        {format(notification.timestamp, 'MMM dd, HH:mm')}
+    <div className="relative">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="icon" className="relative">
+            <BellRing className="size-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {unreadCount}
+              </span>
+            )}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[380px]">
+          <DropdownMenuLabel className="flex items-center justify-between">
+            <span>Notifications</span>
+            {notifications.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearNotifications}
+                className="text-xs text-muted-foreground hover:text-destructive"
+              >
+                Clear all
+              </Button>
+            )}
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <ScrollArea className="h-[300px]">
+            {notifications.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">
+                No notifications
+              </div>
+            ) : (
+              notifications.map((notification) => (
+                <DropdownMenuItem key={notification.id} className="p-4">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">
+                        Order #{notification.orderNumber}
                       </span>
-                    )}
+                      <span className="text-xs text-muted-foreground">
+                        {format(new Date(notification.timestamp), 'MMM dd, HH:mm')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Customer: {notification.customerName}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Amount: {formatCurrency({ amount: notification.totalPrice, currency: "INR" })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Created by: {notification.createdBy}
+                    </p>
                   </div>
-                  <p className="text-sm">Customer: {notification.customerName}</p>
-                  <p className="text-sm">
-                    Amount: {formatCurrency({ amount: notification.totalPrice, currency: "INR" })}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Created by: {notification.createdBy}
-                  </p>
-                </div>
-              ))}
-            </div>
+                </DropdownMenuItem>
+              ))
+            )}
+          </ScrollArea>
+          {notifications.length > 0 && (
+            <>
+              <DropdownMenuSeparator />
+              <div className="p-2 text-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleMarkAsRead}
+                  className="w-full text-xs"
+                >
+                  Mark all as read
+                </Button>
+              </div>
+            </>
           )}
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
