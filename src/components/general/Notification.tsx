@@ -161,7 +161,7 @@ export function NotificationComponent() {
                       <span className="font-medium">
                         Order #{notification.orderNumber}
                       </span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground pl-10">
                         {format(new Date(notification.timestamp), 'MMM dd, HH:mm')}
                       </span>
                     </div>
@@ -174,6 +174,7 @@ export function NotificationComponent() {
                     <p className="text-xs text-muted-foreground">
                       Created by: {notification.createdBy}
                     </p>
+
                   </div>
                 </DropdownMenuItem>
               ))

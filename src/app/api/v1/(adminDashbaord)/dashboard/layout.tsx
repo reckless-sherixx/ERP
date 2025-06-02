@@ -74,7 +74,7 @@ export default async function DashboardLayout({
                             </SheetContent>
                         </Sheet>
                         <div className="flex items-center ml-auto">
-                           {isAdmin && <NotificationComponent />}
+                          <NotificationComponent />
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button
