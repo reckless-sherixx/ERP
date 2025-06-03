@@ -15,7 +15,7 @@ import {
 import { useState } from "react";
 import { OrderDetailsDialog } from "./OrderDetailsDialog";
 import { AssignOrderDialog } from "./AssignOrderDialog";
-    
+
 interface TaskActionsProps {
     id: string;
     order: {
@@ -28,7 +28,8 @@ interface TaskActionsProps {
         totalPrice: number;
         status: string;
         shippingAddress?: string;
-         Assignee?: {
+        isAssigned: boolean;
+        Assignee?: {
             user: {
                 name: string | null;
                 email: string | null;
@@ -54,12 +55,13 @@ export function TaskActions({ id, order }: TaskActionsProps) {
                         <EyeIcon className="size-4 mr-2" /> View Order
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setShowAssignDialog(true)}>
-                        <CheckCircle className="size-4 mr-2" /> Re-Assign Order
+                        <CheckCircle className="size-4 mr-2" />
+                        {order.isAssigned ? 'Re-Assign Order' : 'Assign Order'}
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <OrderDetailsDialog 
+            <OrderDetailsDialog
                 isOpen={showViewDialog}
                 onClose={() => setShowViewDialog(false)}
                 order={order}

@@ -335,3 +335,63 @@ export async function addMaterial(prevState: any, formData: FormData) {
   });
   return redirect("/api/v1/factory/dashboard/inventory");
 }
+
+// Submit work actions
+interface SubmitWorkParams {
+  orderId: string;
+  comment: string;
+  fileUrl: string;
+}
+
+export async function submitDesignWork({ orderId, comment, fileUrl }: SubmitWorkParams) {
+  try {
+    const session = await requireUser();
+
+    // First check if assignee exists
+    const assignee = await prisma.assignee.findFirst({
+      where: {
+        orderId: orderId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!assignee) {
+      throw new Error("You are not assigned to this order");
+    }
+
+    // Create design submission with explicit type
+    const submission = await prisma.designSubmission.create({
+      data: {
+        comment,
+        fileUrl,
+        assigneeId: assignee.id,
+        orderId: orderId,
+      },
+    });
+
+    // Update the assignee status
+    await prisma.assignee.update({
+      where: {
+        id: assignee.id,
+      },
+      data: {
+        status: "PENDING",
+      },
+    });
+
+    // Update the order status
+    await prisma.order.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        status: "IN_PRODUCTION",
+      },
+    });
+
+    return { success: true, submission };
+  } catch (error) {
+    console.error("Error submitting design work:", error);
+    throw new Error(error instanceof Error ? error.message : "Failed to submit design work");
+  }
+}

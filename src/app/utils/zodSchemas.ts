@@ -72,3 +72,4 @@ export const inventorySchema = z.object({
     reorderPoint: z.number().min(0, "Reorder point cannot be negative"),
     supplier: z.string().min(1, "Supplier name is required"),
 });
+

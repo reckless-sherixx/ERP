@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, UserPlus } from "lucide-react";
 import { OrderDetailsDialog } from "../AssignTaskComponents/OrderDetailsDialog";
 import { OrderStatus } from "@prisma/client";
+import { SubmitWorkDialog } from "./SubmitWorkDialog";
 
 interface Order {
     id: string;
@@ -26,7 +27,7 @@ interface AssignedTasksCardProps {
 
 export function AssignedTasksCard({ initialData }: AssignedTasksCardProps) {
     const [viewingOrder, setViewingOrder] = useState<Order | null>(null);
-
+    const [submittingOrder, setSubmittingOrder] = useState<Order | null>(null);
     return (
         <>
             <Card className="mb-6 border border-black/20 shadow-lg">
@@ -80,21 +81,18 @@ export function AssignedTasksCard({ initialData }: AssignedTasksCardProps) {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Button
+                                            variant="default"
+                                            onClick={() => setSubmittingOrder(order)}
+                                        >
+                                            Submit Work
+                                        </Button>
+                                        <Button
                                             variant="outline"
                                             size="icon"
                                             onClick={() => setViewingOrder(order)}
                                         >
                                             <Eye className="h-4 w-4" />
                                         </Button>
-                                        {/* <Button
-                                            onClick={() => setSelectedOrder({
-                                                id: order.id,
-                                                orderNumber: order.orderNumber
-                                            })}
-                                        >
-                                            <UserPlus className="h-4 w-4 mr-2" />
-                                            Assign
-                                        </Button> */}
                                     </div>
                                 </div>
                             </div>
@@ -102,6 +100,16 @@ export function AssignedTasksCard({ initialData }: AssignedTasksCardProps) {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Submit Work Dialog */}
+            {submittingOrder && (
+                <SubmitWorkDialog
+                    isOpen={!!submittingOrder}
+                    onClose={() => setSubmittingOrder(null)}
+                    orderNumber={submittingOrder.orderNumber}
+                    orderId={submittingOrder.id}
+                />
+            )}
 
             {/* View order dialog box */}
             {viewingOrder && (

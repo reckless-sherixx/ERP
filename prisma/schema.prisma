@@ -138,9 +138,10 @@ model Order {
   isAssigned           Boolean?         @default(false)
   productionStatus     ProductionStatus @default(CUTTING)
 
-  user     User?      @relation(fields: [userId], references: [id])
-  userId   String?
-  Assignee Assignee[]
+  user             User?              @relation(fields: [userId], references: [id])
+  userId           String?
+  Assignee         Assignee[]
+  DesignSubmission DesignSubmission[]
 }
 
 model Assignee {
@@ -150,8 +151,9 @@ model Assignee {
   status     DesignStatus @default(PENDING)
   assignedAt DateTime     @default(now())
 
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order            Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  designSubmission DesignSubmission[]
 }
 
 model Invoice {
@@ -219,17 +221,24 @@ model Notification {
   userId     String?
   user       User?    @relation(fields: [userId], references: [id])
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
 
   @@index([userId])
 }
 
-model DesignRevision {
-  id        String   @id @default(uuid())
-  version   Int
-  comment   String?
-  fileUrl   String?
-  createdAt DateTime @default(now())
+model DesignSubmission {
+  id      String  @id @default(uuid())
+  comment String?
+  fileUrl String?
+  isApprovedByCustomer Boolean? @default(false)
+  isApprovedByAdmin    Boolean? @default(false)
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  Assignee   Assignee? @relation(fields: [assigneeId], references: [id])
+  assigneeId String?
+  Order      Order?    @relation(fields: [orderId], references: [id])
+  orderId    String?
 }
 
 model WorkStation {

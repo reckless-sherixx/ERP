@@ -6,7 +6,8 @@ import { OrderStatus } from "@prisma/client";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { OrderDetailsDialog } from "../AssignTaskComponents/OrderDetailsDialog";
+import { DesignSubmissionDetails } from "./DesignSubmissionDetails";
+
 
 interface Submission {
     id: string;
@@ -19,6 +20,14 @@ interface Submission {
     totalPrice: number;
     status: OrderStatus;
     productId: string | null;
+    DesignSubmission: {
+        id: string;
+        fileUrl: string;
+        comment: string;
+        status: string;
+        adminFeedback?: string;
+        createdAt: Date;
+    }[] | null;
 }
 
 interface SubmissionsCardProps {
@@ -74,7 +83,7 @@ export function SubmissionsCard({ submissions }: SubmissionsCardProps) {
             </Card>
 
             {viewingOrder && (
-                <OrderDetailsDialog
+                <DesignSubmissionDetails
                     isOpen={!!viewingOrder}
                     onClose={() => setViewingOrder(null)}
                     order={viewingOrder}

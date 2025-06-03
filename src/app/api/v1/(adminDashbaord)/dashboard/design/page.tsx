@@ -10,8 +10,6 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { prisma } from "@/lib/prisma";
-import { PlusIcon } from "lucide-react";
-import Link from "next/link";
 import { Suspense } from "react";
 
 async function getData() {
@@ -29,6 +27,9 @@ async function getData() {
                 },
                 status: {
                     in: ["PENDING", "IN_PRODUCTION"]
+                },
+                DesignSubmission: {
+                    none: {}  
                 }
             },
             select: {
@@ -39,6 +40,15 @@ async function getData() {
                 customerAddress: true,
                 attachment: true,
                 status: true,
+                Assignee:{
+                    select: {
+                        user: {
+                            select: {
+                                name: true,
+                            }
+                        }
+                    }
+                },
                 createdAt: true,
                 productId: true,
                 itemDescription: true,
@@ -46,7 +56,7 @@ async function getData() {
             },
         }),
         // Fetch submissions
-        prisma.order.findMany({
+       prisma.order.findMany({
             where: {
                 Assignee: {
                     some: {
@@ -68,7 +78,30 @@ async function getData() {
                 productId: true,
                 itemDescription: true,
                 totalPrice: true,
+                Assignee:{
+                    select: {
+                        user: {
+                            select: {
+                                name: true,
+                            }
+                        }
+                    }
+                },
+                DesignSubmission: {
+                    select: {
+                        fileUrl: true,
+                        comment: true,
+                        createdAt: true,
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    },
+                    take: 1
+                }
             },
+            orderBy: {
+                createdAt: 'desc'
+            }
         })
     ]);
 
@@ -89,9 +122,6 @@ export default async function DesignRoute() {
                         <CardTitle className="text-2xl font-bold">My Design Tasks</CardTitle>
                         <CardDescription>Manage your assigned tasks and submissions</CardDescription>
                     </div>
-                    <Link href="/api/v1/dashboard/design/submit" className={buttonVariants()}>
-                        <PlusIcon className="mr-2 h-4 w-4" /> Submit Work
-                    </Link>
                 </div>
             </CardHeader>
             <CardContent>
