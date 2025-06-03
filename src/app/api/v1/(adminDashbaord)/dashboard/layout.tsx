@@ -20,23 +20,18 @@ import { hasAdminDashboardAccess } from "@/app/utils/dashboardAccess";
 import { redirect } from "next/navigation";
 import { Role } from "@prisma/client";
 import { NotificationComponent } from "@/components/general/Notification";
+import { requireUser } from "@/app/utils/hooks";
 
 export default async function DashboardLayout({
     children,
 }: {
     children: ReactNode;
 }) {
-    const session = await auth();
-    
-    if (!session?.user) {
-        redirect("/login");
-    }
+    const session = await requireUser();
 
     if (!hasAdminDashboardAccess(session.user.role)) {
         redirect("/customer-dashboard");
     }
-
-    const isAdmin = session.user.role === Role.SYSTEM_ADMIN || session.user.role === Role.ADMIN;
 
     return (
         <>
@@ -73,8 +68,8 @@ export default async function DashboardLayout({
                                 </nav>
                             </SheetContent>
                         </Sheet>
-                        <div className="flex items-center ml-auto">
-                          <NotificationComponent />
+                        <div className="flex items-center ml-auto gap-4">
+                        <NotificationComponent />
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button

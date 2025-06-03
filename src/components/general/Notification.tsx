@@ -3,7 +3,7 @@
 import { useSocket } from "@/context/SocketContext";
 import { Button } from "../ui/button";
 import { BellRing } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/app/utils/formatCurrency";
 import { useSession } from "next-auth/react";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useRouter } from "next/navigation";
 interface DisplayNotification {
   id: string;
   orderNumber: string;
@@ -38,26 +39,51 @@ export function NotificationComponent() {
   const [notifications, setNotifications] = useState<DisplayNotification[]>([]);
   const [roomInfo, setRoomInfo] = useState<RoomInfo>({ connectedUsers: 0, room: '' });
   const [unreadCount, setUnreadCount] = useState(0);
+  const router = useRouter();
 
-  const isAdmin = session?.user?.role === Role.SYSTEM_ADMIN || session?.user?.role === Role.ADMIN;
+   const isAdminRef = useRef(false);
+  
 
+  const handleNotificationClick = (orderNumber: string) => {
+    router.push(`/api/v1/dashboard/taskAssignment`);
+    handleMarkAsRead();
+  };
   useEffect(() => {
-    // Load saved notifications
-    if (typeof window !== 'undefined' && isAdmin) {
+    isAdminRef.current = session?.user?.role === Role.SYSTEM_ADMIN || 
+                        session?.user?.role === Role.ADMIN;
+  }, [session?.user?.role]);
+
+  // First useEffect for loading saved notifications
+  useEffect(() => {
+    if (!isAdminRef.current) {
+      return;
+    }
+
+    try {
       const savedNotifications = localStorage.getItem('adminNotifications');
       if (savedNotifications) {
         setNotifications(JSON.parse(savedNotifications));
       }
+    } catch (error) {
+      console.error('Error loading saved notifications:', error);
     }
+  }, []);
 
-    // Reconnect socket if needed
-    if (!isConnected && isAdmin) {
+  // Second useEffect for socket connection
+  useEffect(() => {
+    if (!isConnected && isAdminRef.current) {
+      console.log('Reconnecting socket for admin...');
       reconnect();
     }
-  }, [isAdmin, isConnected, reconnect]);
+  }, [isConnected, reconnect]);
 
+  // Third useEffect for socket event handlers
   useEffect(() => {
-    if (!socket || !isConnected || !session?.user || !isAdmin) return;
+    if (!socket || !isConnected || !isAdminRef.current) {
+      return;
+    }
+
+    console.log('Setting up notification listeners for admin');
 
     const handleRoomUpdate = (data: any) => {
       console.log('Room update received:', data);
@@ -69,6 +95,7 @@ export function NotificationComponent() {
 
     const handleNotification = (payload: any) => {
       console.log('New notification received:', payload);
+      if (!payload?.data) return;
 
       const newNotification: DisplayNotification = {
         id: crypto.randomUUID(),
@@ -81,7 +108,11 @@ export function NotificationComponent() {
 
       setNotifications(prev => {
         const updated = [newNotification, ...prev];
-        localStorage.setItem('adminNotifications', JSON.stringify(updated));
+        try {
+          localStorage.setItem('adminNotifications', JSON.stringify(updated));
+        } catch (error) {
+          console.error('Failed to save notifications:', error);
+        }
         return updated;
       });
 
@@ -103,10 +134,11 @@ export function NotificationComponent() {
     socket.on('orderNotification', handleNotification);
 
     return () => {
+      console.log('Cleaning up notification listeners for admin');
       socket.off('room-updated', handleRoomUpdate);
       socket.off('orderNotification', handleNotification);
     };
-  }, [socket, isConnected, session, isAdmin]);
+  }, [socket, isConnected]);
   const handleMarkAsRead = () => {
     setUnreadCount(0);
   };
@@ -116,7 +148,7 @@ export function NotificationComponent() {
     localStorage.removeItem('adminNotifications');
   };
 
-  if (status === 'loading' || !isAdmin) {
+  if (status === 'loading') {
     return null;
   }
 
@@ -155,7 +187,11 @@ export function NotificationComponent() {
               </div>
             ) : (
               notifications.map((notification) => (
-                <DropdownMenuItem key={notification.id} className="p-4">
+                <DropdownMenuItem
+                  key={notification.id}
+                  className="p-4 cursor-pointer hover:bg-muted"
+                  onClick={() => handleNotificationClick(notification.orderNumber)}
+                >
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center justify-between">
                       <span className="font-medium">

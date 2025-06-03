@@ -6,12 +6,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Constants
-const NOTIFICATION_ROOM = 'notifications-room';
-
 const app = express();
 const httpServer = createServer(app);
-
 
 
 // Configure Socket.IO with CORS
