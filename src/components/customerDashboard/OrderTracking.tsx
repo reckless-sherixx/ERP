@@ -23,6 +23,7 @@ interface OrderDetails {
         fileUrl: string;
         comment: string;
         isApprovedByCustomer: boolean;
+        isApprovedByAdmin: boolean;
         createdAt: Date;
     }[] | null;
     Assignee: {
@@ -151,63 +152,65 @@ export default function OrderTracking() {
                             {orderDetails.DesignSubmission && orderDetails.DesignSubmission.length > 0 && (
                                 <div className="space-y-4">
                                     <h3 className="font-medium">Design Submissions</h3>
-                                    {orderDetails.DesignSubmission.map((submission) => (
-                                        <Card key={submission.id} className="p-4">
-                                            <div className="space-y-4">
-                                                <div className="aspect-video relative rounded-lg border overflow-hidden bg-muted">
-                                                    {submission.fileUrl && (
-                                                        <Image
-                                                            src={submission.fileUrl}
-                                                            alt="Design Preview"
-                                                            fill
-                                                            className="object-contain"
-                                                        />
-                                                    )}
-                                                </div>
-
-                                                {submission.comment && (
-                                                    <div>
-                                                        <h4 className="text-sm font-medium mb-1">Designer Notes:</h4>
-                                                        <p className="text-sm text-muted-foreground">{submission.comment}</p>
+                                    {orderDetails.DesignSubmission
+                                        .filter(submission => submission.isApprovedByAdmin) // Only show admin-approved submissions
+                                        .map((submission) => (
+                                            <Card key={submission.id} className="p-4">
+                                                <div className="space-y-4">
+                                                    <div className="aspect-video relative rounded-lg border overflow-hidden bg-muted">
+                                                        {submission.fileUrl && (
+                                                            <Image
+                                                                src={submission.fileUrl}
+                                                                alt="Design Preview"
+                                                                fill
+                                                                className="object-contain"
+                                                            />
+                                                        )}
                                                     </div>
-                                                )}
 
-                                                <div className="flex justify-end gap-2">
-                                                    {!submission.isApprovedByCustomer && !actionInProgress && (
-                                                        <>
-                                                            <Button
-                                                                variant="outline"
-                                                                onClick={() => handleDesignAction('revision', submission.id)}
-                                                                disabled={actionInProgress}
-                                                            >
-                                                                {actionInProgress ? (
-                                                                    <>
-                                                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                                        Processing...
-                                                                    </>
-                                                                ) : (
-                                                                    'Request Revision'
-                                                                )}
-                                                            </Button>
-                                                            <Button
-                                                                onClick={() => handleDesignAction('approve', submission.id)}
-                                                                disabled={actionInProgress}
-                                                            >
-                                                                {actionInProgress ? (
-                                                                    <>
-                                                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                                        Processing...
-                                                                    </>
-                                                                ) : (
-                                                                    'Approve Design'
-                                                                )}
-                                                            </Button>
-                                                        </>
+                                                    {submission.comment && (
+                                                        <div>
+                                                            <h4 className="text-sm font-medium mb-1">Designer Notes:</h4>
+                                                            <p className="text-sm text-muted-foreground">{submission.comment}</p>
+                                                        </div>
                                                     )}
+
+                                                    <div className="flex justify-end gap-2">
+                                                        {!submission.isApprovedByCustomer && !actionInProgress && (
+                                                            <>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    onClick={() => handleDesignAction('revision', submission.id)}
+                                                                    disabled={actionInProgress}
+                                                                >
+                                                                    {actionInProgress ? (
+                                                                        <>
+                                                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                                            Processing...
+                                                                        </>
+                                                                    ) : (
+                                                                        'Request Revision'
+                                                                    )}
+                                                                </Button>
+                                                                <Button
+                                                                    onClick={() => handleDesignAction('approve', submission.id)}
+                                                                    disabled={actionInProgress}
+                                                                >
+                                                                    {actionInProgress ? (
+                                                                        <>
+                                                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                                            Processing...
+                                                                        </>
+                                                                    ) : (
+                                                                        'Approve Design'
+                                                                    )}
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </Card>
-                                    ))}
+                                            </Card>
+                                        ))}
                                 </div>
                             )}
                         </CardContent>

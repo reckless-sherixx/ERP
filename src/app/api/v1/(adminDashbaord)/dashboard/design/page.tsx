@@ -1,9 +1,7 @@
 import { accessDesignDashboard } from "@/app/utils/dashboardAccess";
 import { requireUser } from "@/app/utils/hooks";
-import { AdminDesignReview } from "@/components/adminDashboardComponents/DesignComponents/AssignDesignReview";
 import { DesignDashboardBlocks } from "@/components/adminDashboardComponents/DesignComponents/DesignDashboardBlocks";
 import { DesignDashboardContent } from "@/components/adminDashboardComponents/DesignComponents/DesignDashboardComponent";
-import { DesignTabs } from "@/components/adminDashboardComponents/DesignComponents/DesignTabs";
 import {
     Card,
     CardContent,
@@ -11,12 +9,11 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { prisma } from "@/lib/prisma";
 import { Submission } from "@/types/submission";
 import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
+
 
 async function getData(userRole: Role) {
     const session = await requireUser();
@@ -64,7 +61,7 @@ async function getData(userRole: Role) {
     }) : [];
 
     // Fetch submissions based on role
-     const submissions = isAdminRole 
+    const submissions = isAdminRole
         ? await prisma.order.findMany({
             where: {
                 DesignSubmission: {
@@ -103,8 +100,8 @@ async function getData(userRole: Role) {
                         id: true,
                         fileUrl: true,
                         comment: true,
-                        isApprovedByCustomer: true,
                         isApprovedByAdmin: true,
+                        isApprovedByCustomer: true,
                         createdAt: true
                     },
                     orderBy: {
@@ -153,8 +150,8 @@ async function getData(userRole: Role) {
                         id: true,
                         fileUrl: true,
                         comment: true,
-                        isApprovedByCustomer: true,
                         isApprovedByAdmin: true,
+                        isApprovedByCustomer: true,
                         createdAt: true,
                     },
                     orderBy: {
@@ -170,7 +167,7 @@ async function getData(userRole: Role) {
 
     return {
         assignedTasks,
-        submissions: submissions as Submission [],
+        submissions: submissions as Submission[],
         isAdminRole
     };
 }
@@ -183,7 +180,7 @@ export default async function DesignRoute() {
     const data = await getData(session.user?.role as Role);
     const isAdminRole = session.user?.role === Role.SYSTEM_ADMIN || session.user?.role === Role.ADMIN;
 
-     return (
+    return (
         <>
             <div className="space-y-6">
                 <DesignDashboardBlocks />
@@ -196,8 +193,8 @@ export default async function DesignRoute() {
                                 {isAdminRole ? "Design Submissions Review" : "My Design Tasks"}
                             </CardTitle>
                             <CardDescription>
-                                {isAdminRole 
-                                    ? "Review and manage design submissions" 
+                                {isAdminRole
+                                    ? "Review and manage design submissions"
                                     : "Manage your assigned tasks and submissions"}
                             </CardDescription>
                         </div>

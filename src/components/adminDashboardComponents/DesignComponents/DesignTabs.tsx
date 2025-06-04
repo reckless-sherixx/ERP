@@ -3,7 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssignedTasksCard } from "./AssignedTasksCard";
 import { SubmissionsCard } from "./SubmissionCard";
-import { DesignStatus, OrderStatus } from "@prisma/client";
+import { OrderStatus } from "@prisma/client";
 import { Submission } from "@/types/submission";
 
 interface Order {

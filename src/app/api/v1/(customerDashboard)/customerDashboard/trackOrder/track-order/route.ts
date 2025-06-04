@@ -33,10 +33,15 @@ export async function GET(request: Request) {
                         id: true,
                         fileUrl: true,
                         comment: true,
+                        isApprovedByAdmin: true,
+                        isApprovedByCustomer: true, 
                         createdAt: true,
                     },
                     orderBy: {
                         createdAt: 'desc'
+                    },
+                    where: {
+                        isApprovedByAdmin: true // Only fetch admin-approved submissions
                     }
                 },
                 Assignee: {
