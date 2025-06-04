@@ -30,7 +30,7 @@ export default async function DashboardLayout({
     const session = await requireUser();
 
     if (!hasAdminDashboardAccess(session.user.role)) {
-        redirect("/customer-dashboard");
+        redirect("/api/v1/customerDashboard");
     }
 
     return (

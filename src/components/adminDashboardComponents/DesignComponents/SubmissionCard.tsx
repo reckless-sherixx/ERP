@@ -20,12 +20,16 @@ interface Submission {
     totalPrice: number;
     status: OrderStatus;
     productId: string | null;
+    Assignee?: {
+        status: string;
+        user: {
+            name: string | null;
+        };
+    }[];
     DesignSubmission: {
         id: string;
         fileUrl: string;
         comment: string;
-        status: string;
-        adminFeedback?: string;
         createdAt: Date;
     }[] | null;
 }

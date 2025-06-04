@@ -1,6 +1,7 @@
+import { accessDesignDashboard } from "@/app/utils/dashboardAccess";
 import { requireUser } from "@/app/utils/hooks";
+import { DesignDashboardBlocks } from "@/components/adminDashboardComponents/DesignComponents/DesignDashboardBlocks";
 import { DesignTabs } from "@/components/adminDashboardComponents/DesignComponents/DesignTabs";
-import { buttonVariants } from "@/components/ui/button";
 import {
     Card,
     CardContent,
@@ -10,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 async function getData() {
@@ -29,7 +31,7 @@ async function getData() {
                     in: ["PENDING", "IN_PRODUCTION"]
                 },
                 DesignSubmission: {
-                    none: {}  
+                    none: {}
                 }
             },
             select: {
@@ -40,7 +42,7 @@ async function getData() {
                 customerAddress: true,
                 attachment: true,
                 status: true,
-                Assignee:{
+                Assignee: {
                     select: {
                         user: {
                             select: {
@@ -56,15 +58,15 @@ async function getData() {
             },
         }),
         // Fetch submissions
-       prisma.order.findMany({
+        prisma.order.findMany({
             where: {
                 Assignee: {
                     some: {
                         userId: userId
                     }
                 },
-                status: {
-                    in: ["COMPLETED", "IN_PRODUCTION"]
+                DesignSubmission: {
+                    some: {}
                 }
             },
             select: {
@@ -78,8 +80,9 @@ async function getData() {
                 productId: true,
                 itemDescription: true,
                 totalPrice: true,
-                Assignee:{
+                Assignee: {
                     select: {
+                        status: true,
                         user: {
                             select: {
                                 name: true,
@@ -112,26 +115,35 @@ async function getData() {
 }
 
 export default async function DesignRoute() {
+    const session = await requireUser();
+    if (!accessDesignDashboard(session.user?.role)) {
+        redirect('/api/v1/dashboard')
+    }
     const data = await getData();
-    
+
     return (
-        <Card>
-            <CardHeader>
-                <div className="flex items-center justify-between">
-                    <div>
-                        <CardTitle className="text-2xl font-bold">My Design Tasks</CardTitle>
-                        <CardDescription>Manage your assigned tasks and submissions</CardDescription>
+        <>
+            <div className="space-y-6">
+                <DesignDashboardBlocks />
+            </div>
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle className="text-2xl font-bold">My Design Tasks</CardTitle>
+                            <CardDescription>Manage your assigned tasks and submissions</CardDescription>
+                        </div>
                     </div>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <Suspense fallback={<Skeleton className="w-full h-[500px]" />}>
-                    <DesignTabs 
-                        assignedTasks={data.assignedTasks}
-                        submissions={data.submissions}
-                    />
-                </Suspense>
-            </CardContent>
-        </Card>
+                </CardHeader>
+                <CardContent>
+                    <Suspense fallback={<Skeleton className="w-full h-[500px]" />}>
+                        <DesignTabs
+                            assignedTasks={data.assignedTasks}
+                            submissions={data.submissions}
+                        />
+                    </Suspense>
+                </CardContent>
+            </Card>
+        </>
     );
 }

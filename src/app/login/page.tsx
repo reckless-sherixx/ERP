@@ -12,7 +12,7 @@ export default async function Login() {
         if (hasAdminDashboardAccess(session.user.role)) {
             redirect("/api/v1/dashboard");
         } else {
-            redirect("/customer-dashboard"); // if user is not any of the authorized roles, then redirect him to customer dashboard 
+             redirect("/api/v1/customerDashboard"); // if user is not any of the authorized roles, then redirect him to customer dashboard 
         }
     }
     return (

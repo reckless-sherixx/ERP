@@ -34,3 +34,8 @@ export function accessToInventory(role?: string): boolean {
     return role ? allowedRoles.includes(role) : false;
 }
 
+export function accessDesignDashboard(role?:string):boolean{
+    const allowedRoles = ['SYSTEM_ADMIN', 'ADMIN', 'DESIGN'];
+    return role ? allowedRoles.includes(role) : false;
+}
+

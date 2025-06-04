@@ -10,7 +10,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, ImageIcon, Loader2 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -31,6 +30,7 @@ interface DesignSubmissionDetailsProps {
         shippingAddress?: string;
         attachment?: string;
         Assignee?: {
+            status:string;
             user: {
                 name: string | null;
             };
@@ -39,8 +39,6 @@ interface DesignSubmissionDetailsProps {
             id: string;
             fileUrl: string;
             comment: string;
-            status: string;
-            adminFeedback?: string;
             createdAt: Date;
         }[] | null;
     };
@@ -54,6 +52,7 @@ export function DesignSubmissionDetails({
 }: DesignSubmissionDetailsProps) {
     const [isDownloading, setIsDownloading] = useState(false);
     const latestSubmission = order.DesignSubmission?.[0];
+     const assigneeStatus = order.Assignee?.[0]?.status;
     const formatDate = (date: string | Date) => {
         if (!date) return "Not submitted yet";
         return new Date(date).toLocaleString("en-US", {
@@ -135,13 +134,15 @@ export function DesignSubmissionDetails({
                                 Submission Status
                             </h3>
                             <Badge variant={
-                                latestSubmission?.status === "APPROVED"
+                                assigneeStatus === "APPROVED" 
                                     ? "success"
-                                    : latestSubmission?.status === "REVISION"
+                                    : assigneeStatus === "REVISION"
                                         ? "warning"
-                                        : "secondary"
+                                        : assigneeStatus === "PENDING"
+                                            ? "default"
+                                            : "secondary"
                             }>
-                                {latestSubmission?.status?.toLowerCase() || "pending"}
+                                {assigneeStatus?.toLowerCase() || "pending"}
                             </Badge>
                         </div>
 

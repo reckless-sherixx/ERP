@@ -10,6 +10,7 @@ import { RecentInvoices } from "@/components/adminDashboardComponents/InvoiceCom
 import { canEditInAdminDashboard } from "@/app/utils/dashboardAccess";
 import { RecentOrders } from "@/components/adminDashboardComponents/OrderComponents/RecentOrder";
 import { Role } from "@prisma/client";
+import { redirect } from "next/navigation";
 
 interface PageProps {
     searchParams: { view?: string }
@@ -17,6 +18,12 @@ interface PageProps {
 
 export default async function DashboardRoute({ searchParams }: PageProps) {
     const session = await requireUser();
+
+    // Redirect designers directly to design dashboard
+    if (session.user.role === Role.DESIGN) {
+        redirect('/api/v1/dashboard/design');
+    }
+
     const params = await searchParams
     // Determine default view based on role
     const defaultView = session.user.role === Role.SALES ? "orders" 
