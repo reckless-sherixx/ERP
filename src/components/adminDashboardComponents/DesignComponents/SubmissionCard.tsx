@@ -7,32 +7,7 @@ import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { DesignSubmissionDetails } from "./DesignSubmissionDetails";
-
-
-interface Submission {
-    id: string;
-    orderNumber: string;
-    customerName: string;
-    customerEmail: string | null;
-    customerAddress: string;
-    createdAt: Date;
-    itemDescription: string;
-    totalPrice: number;
-    status: OrderStatus;
-    productId: string | null;
-    Assignee?: {
-        status: string;
-        user: {
-            name: string | null;
-        };
-    }[];
-    DesignSubmission: {
-        id: string;
-        fileUrl: string;
-        comment: string;
-        createdAt: Date;
-    }[] | null;
-}
+import { Submission } from "@/types/submission";
 
 interface SubmissionsCardProps {
     submissions: Submission[];

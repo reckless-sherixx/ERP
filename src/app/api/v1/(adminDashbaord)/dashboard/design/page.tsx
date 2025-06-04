@@ -1,6 +1,8 @@
 import { accessDesignDashboard } from "@/app/utils/dashboardAccess";
 import { requireUser } from "@/app/utils/hooks";
+import { AdminDesignReview } from "@/components/adminDashboardComponents/DesignComponents/AssignDesignReview";
 import { DesignDashboardBlocks } from "@/components/adminDashboardComponents/DesignComponents/DesignDashboardBlocks";
+import { DesignDashboardContent } from "@/components/adminDashboardComponents/DesignComponents/DesignDashboardComponent";
 import { DesignTabs } from "@/components/adminDashboardComponents/DesignComponents/DesignTabs";
 import {
     Card,
@@ -11,27 +13,64 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { prisma } from "@/lib/prisma";
+import { Submission } from "@/types/submission";
+import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-async function getData() {
+async function getData(userRole: Role) {
     const session = await requireUser();
     const userId = session.user.id;
+    const isAdminRole = userRole === Role.SYSTEM_ADMIN || userRole === Role.ADMIN;
 
-    const [assignedTasks, submissions] = await Promise.all([
-        // Fetch assigned tasks
-        prisma.order.findMany({
-            where: {
-                Assignee: {
-                    some: {
-                        userId: userId
+    // Fetch assigned tasks (for designers only)
+    const assignedTasks = !isAdminRole ? await prisma.order.findMany({
+        where: {
+            Assignee: {
+                some: {
+                    userId: userId
+                }
+            },
+            status: {
+                in: ["PENDING", "IN_PRODUCTION"]
+            },
+            DesignSubmission: {
+                none: {}
+            }
+        },
+        select: {
+            id: true,
+            orderNumber: true,
+            customerName: true,
+            customerEmail: true,
+            customerAddress: true,
+            attachment: true,
+            status: true,
+            Assignee: {
+                select: {
+                    status: true,
+                    user: {
+                        select: {
+                            name: true,
+                        }
                     }
-                },
-                status: {
-                    in: ["PENDING", "IN_PRODUCTION"]
-                },
+                }
+            },
+            createdAt: true,
+            productId: true,
+            itemDescription: true,
+            totalPrice: true,
+        },
+    }) : [];
+
+    // Fetch submissions based on role
+     const submissions = isAdminRole 
+        ? await prisma.order.findMany({
+            where: {
                 DesignSubmission: {
-                    none: {}
+                    some: {
+                        isApprovedByAdmin: false
+                    }
                 }
             },
             select: {
@@ -40,25 +79,42 @@ async function getData() {
                 customerName: true,
                 customerEmail: true,
                 customerAddress: true,
-                attachment: true,
                 status: true,
-                Assignee: {
-                    select: {
-                        user: {
-                            select: {
-                                name: true,
-                            }
-                        }
-                    }
-                },
                 createdAt: true,
                 productId: true,
                 itemDescription: true,
                 totalPrice: true,
-            },
-        }),
-        // Fetch submissions
-        prisma.order.findMany({
+                Assignee: {
+                    select: {
+                        id: true,
+                        status: true,
+                        user: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    }
+                },
+                DesignSubmission: {
+                    where: {
+                        isApprovedByAdmin: false
+                    },
+                    select: {
+                        id: true,
+                        fileUrl: true,
+                        comment: true,
+                        isApprovedByCustomer: true,
+                        isApprovedByAdmin: true,
+                        createdAt: true
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    },
+                    take: 1
+                }
+            }
+        })
+        : await prisma.order.findMany({
             where: {
                 Assignee: {
                     some: {
@@ -80,8 +136,10 @@ async function getData() {
                 productId: true,
                 itemDescription: true,
                 totalPrice: true,
+                attachment: true,
                 Assignee: {
                     select: {
+                        id: true,
                         status: true,
                         user: {
                             select: {
@@ -92,8 +150,11 @@ async function getData() {
                 },
                 DesignSubmission: {
                     select: {
+                        id: true,
                         fileUrl: true,
                         comment: true,
+                        isApprovedByCustomer: true,
+                        isApprovedByAdmin: true,
                         createdAt: true,
                     },
                     orderBy: {
@@ -105,12 +166,12 @@ async function getData() {
             orderBy: {
                 createdAt: 'desc'
             }
-        })
-    ]);
+        });
 
     return {
         assignedTasks,
-        submissions
+        submissions: submissions as Submission [],
+        isAdminRole
     };
 }
 
@@ -119,9 +180,10 @@ export default async function DesignRoute() {
     if (!accessDesignDashboard(session.user?.role)) {
         redirect('/api/v1/dashboard')
     }
-    const data = await getData();
+    const data = await getData(session.user?.role as Role);
+    const isAdminRole = session.user?.role === Role.SYSTEM_ADMIN || session.user?.role === Role.ADMIN;
 
-    return (
+     return (
         <>
             <div className="space-y-6">
                 <DesignDashboardBlocks />
@@ -130,18 +192,23 @@ export default async function DesignRoute() {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <div>
-                            <CardTitle className="text-2xl font-bold">My Design Tasks</CardTitle>
-                            <CardDescription>Manage your assigned tasks and submissions</CardDescription>
+                            <CardTitle className="text-2xl font-bold">
+                                {isAdminRole ? "Design Submissions Review" : "My Design Tasks"}
+                            </CardTitle>
+                            <CardDescription>
+                                {isAdminRole 
+                                    ? "Review and manage design submissions" 
+                                    : "Manage your assigned tasks and submissions"}
+                            </CardDescription>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Suspense fallback={<Skeleton className="w-full h-[500px]" />}>
-                        <DesignTabs
-                            assignedTasks={data.assignedTasks}
-                            submissions={data.submissions}
-                        />
-                    </Suspense>
+                    <DesignDashboardContent
+                        isAdminRole={isAdminRole}
+                        submissions={data.submissions}
+                        assignedTasks={data.assignedTasks}
+                    />
                 </CardContent>
             </Card>
         </>

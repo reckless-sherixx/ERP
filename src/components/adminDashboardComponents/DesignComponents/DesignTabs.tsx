@@ -3,7 +3,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssignedTasksCard } from "./AssignedTasksCard";
 import { SubmissionsCard } from "./SubmissionCard";
-import { OrderStatus } from "@prisma/client";
+import { DesignStatus, OrderStatus } from "@prisma/client";
+import { Submission } from "@/types/submission";
 
 interface Order {
     id: string;
@@ -20,7 +21,7 @@ interface Order {
 
 interface DesignTabsProps {
     assignedTasks: Order[];
-    submissions: Order[];
+    submissions: Submission[];
 }
 
 export function DesignTabs({ assignedTasks, submissions }: DesignTabsProps) {
