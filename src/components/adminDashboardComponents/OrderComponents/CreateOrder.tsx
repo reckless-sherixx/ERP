@@ -208,9 +208,10 @@ export function CreateOrder() {
                                 </p>
                             </div>
                         </div>
-                    </div>
+                    </div> 
                     {/* Attachment */}
                     <div className="mb-6" >
+                        <Label>Attachment (Optional)</Label>
                         <UploadButton
                             onChange={(url:any) => setAttachment(url)}
                             value={attachment}

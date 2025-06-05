@@ -20,9 +20,10 @@ interface SubmitWorkDialogProps {
     onClose: () => void;
     orderNumber: string;
     orderId: string;
+    isRevision: boolean;     
 }
 
-export function SubmitWorkDialog({ isOpen, onClose, orderNumber, orderId }: SubmitWorkDialogProps) {
+export function SubmitWorkDialog({ isOpen, onClose, orderNumber, orderId , isRevision }: SubmitWorkDialogProps) {
     const [attachment, setAttachment] = useState<string>();
     const [comment, setComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,6 +43,7 @@ export function SubmitWorkDialog({ isOpen, onClose, orderNumber, orderId }: Subm
                 orderId,
                 comment,
                 fileUrl: attachment,
+                isRevision,
             });
 
             toast.success("Work submitted successfully!");
@@ -58,15 +60,21 @@ export function SubmitWorkDialog({ isOpen, onClose, orderNumber, orderId }: Subm
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
-                    <DialogTitle>Submit Work for: {orderNumber}</DialogTitle>
+                    <DialogTitle>
+                        {isRevision ? 'Submit Revision for:' : 'Submit Work for:'} {orderNumber}
+                    </DialogTitle>
                     <DialogDescription>
-                        Upload your completed design work for review
+                        {isRevision 
+                            ? 'Upload your revised design work based on the feedback'
+                            : 'Upload your completed design work for review'
+                        }
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-4">
                         <div>
+                            <Label>Upload {isRevision ? 'Revised' : 'Design'} Work</Label>
                             <UploadButton
                                 onChange={(url) => setAttachment(url)}
                                 value={attachment}
@@ -74,9 +82,15 @@ export function SubmitWorkDialog({ isOpen, onClose, orderNumber, orderId }: Subm
                         </div>
 
                         <div>
-                            <Label className="mb-2">Comments</Label>
+                            <Label>
+                                {isRevision ? 'Revision Notes' : 'Comments'}
+                            </Label>
                             <Textarea
-                                placeholder="Add any comments about your submission..."
+                                placeholder={
+                                    isRevision 
+                                        ? "Explain the changes made in this revision..."
+                                        : "Add any comments about your submission..."
+                                }
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
                             />
@@ -87,8 +101,17 @@ export function SubmitWorkDialog({ isOpen, onClose, orderNumber, orderId }: Subm
                         <Button type="button" variant="outline" onClick={onClose}>
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isSubmitting}>
-                            Submit Work
+                        <Button 
+                            type="submit" 
+                            disabled={isSubmitting}
+                            variant={isRevision ? "destructive" : "default"}
+                        >
+                            {isSubmitting 
+                                ? "Submitting..." 
+                                : isRevision 
+                                    ? "Submit Revision" 
+                                    : "Submit Work"
+                            }
                         </Button>
                     </div>
                 </form>

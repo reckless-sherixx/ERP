@@ -11,26 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, FileText } from "lucide-react";
 import Link from "next/link";
+import { DesignStatus } from "@prisma/client";
+import { Order } from "@/types/order";
 
 interface OrderDetailsDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  order: {
-    orderNumber: string;
-    customerName: string;
-    customerEmail: string | null;
-    createdAt: Date;
-    itemDescription: string;
-    totalPrice: number;
-    status: string;
-    shippingAddress?: string;
-    attachment?: string;
-    Assignee?: {
-      user: {
-        name: string | null;
-      };
-    }[];
-  };
+    isOpen: boolean;
+    onClose: () => void;
+    order: Order;
 }
 
 export function OrderDetailsDialog({

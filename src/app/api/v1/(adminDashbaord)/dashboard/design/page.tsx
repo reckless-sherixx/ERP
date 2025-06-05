@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
 import { Submission } from "@/types/submission";
-import { Role } from "@prisma/client";
+import { DesignStatus, Role } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 
@@ -25,15 +25,20 @@ async function getData(userRole: Role) {
         where: {
             Assignee: {
                 some: {
-                    userId: userId
+                    userId: userId,
+                    OR: [
+                        {
+                            status: DesignStatus.PENDING
+                        },
+                        {
+                            status: DesignStatus.REVISION
+                        }
+                    ]
                 }
             },
             status: {
                 in: ["PENDING", "IN_PRODUCTION"]
             },
-            DesignSubmission: {
-                none: {}
-            }
         },
         select: {
             id: true,
@@ -45,6 +50,7 @@ async function getData(userRole: Role) {
             status: true,
             Assignee: {
                 select: {
+                    id: true,
                     status: true,
                     user: {
                         select: {

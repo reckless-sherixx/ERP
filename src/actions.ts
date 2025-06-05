@@ -341,13 +341,14 @@ interface SubmitWorkParams {
   orderId: string;
   comment: string;
   fileUrl: string;
+  isRevision?:boolean;
 }
 
-export async function submitDesignWork({ orderId, comment, fileUrl }: SubmitWorkParams) {
+export async function submitDesignWork({ orderId, comment, fileUrl , isRevision }: SubmitWorkParams) {
   try {
     const session = await requireUser();
 
-    // First check if assignee exists
+    // check if assignee exists
     const assignee = await prisma.assignee.findFirst({
       where: {
         orderId: orderId,
@@ -360,38 +361,37 @@ export async function submitDesignWork({ orderId, comment, fileUrl }: SubmitWork
     }
 
     // Create design submission with explicit type
-    const submission = await prisma.designSubmission.create({
-      data: {
-        comment,
-        fileUrl,
-        assigneeId: assignee.id,
-        orderId: orderId,
-      },
-    });
+     const submission = await prisma.designSubmission.create({
+            data: {
+                fileUrl,
+                comment,
+                orderId,
+                isApprovedByAdmin: false,
+                isApprovedByCustomer: false,
+            },
+        });
 
-    // Update the assignee status
-    await prisma.assignee.update({
-      where: {
-        id: assignee.id,
-      },
-      data: {
-        status: "PENDING",
-      },
-    });
+        // If this is a revision, update the order and assignee status
+        if (isRevision) {
+            await prisma.$transaction([
+                prisma.order.update({
+                    where: { id: orderId },
+                    data: {
+                        status: "IN_PRODUCTION",
+                    },
+                }),
+                prisma.assignee.updateMany({
+                    where: { orderId },
+                    data: {
+                        status: "PENDING", 
+                    },
+                }),
+            ]);
+        }
 
-    // Update the order status
-    await prisma.order.update({
-      where: {
-        id: orderId,
-      },
-      data: {
-        status: "IN_PRODUCTION",
-      },
-    });
-
-    return { success: true, submission };
-  } catch (error) {
-    console.error("Error submitting design work:", error);
-    throw new Error(error instanceof Error ? error.message : "Failed to submit design work");
-  }
+        return submission;
+    } catch (error) {
+        console.error('Error submitting design work:', error);
+        throw new Error('Failed to submit design work');
+    }
 }

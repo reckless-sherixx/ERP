@@ -39,7 +39,6 @@ export function UploadButton({ onChange, value }: UploadButtonProps) {
 
     return (
         <div className="flex flex-col gap-2">
-            <Label>Upload Attachment(Reference)</Label>
             <UploadDropzone<OurFileRouter, "imageUploader">
                 endpoint="imageUploader"
                 onClientUploadComplete={(res) => {

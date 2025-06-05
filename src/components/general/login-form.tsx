@@ -36,7 +36,7 @@ export default async function LoginForm() {
                                 Welcome Back
                             </CardTitle>
                             <CardDescription>
-                                Login with your Google or Github account
+                                Login with your Google account
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

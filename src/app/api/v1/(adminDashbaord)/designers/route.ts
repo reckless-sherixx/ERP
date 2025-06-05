@@ -55,34 +55,72 @@ export async function POST(request: Request) {
             where: { id: submissionId },
             include: {
                 Assignee: true,
+                Order: true,
             },
         });
 
-        if (!submission?.assigneeId) {
+        if (!submission?.orderId || !submission?.assigneeId) {
             return NextResponse.json(
-                { error: "No assignee found for this submission" },
+                { error: "Invalid submission data" },
                 { status: 400 }
             );
         }
 
         const updatedSubmission = await prisma.$transaction(async (tx) => {
-            // Update design submission
-            const updatedSubmission = await tx.designSubmission.update({
-                where: { id: submissionId },
-                data: {
-                    isApprovedByAdmin: action === DesignStatus.APPROVED,
-                },
-            });
+            if (action === DesignStatus.REVISION) {
+                // Reset approvals
+                await tx.designSubmission.update({
+                    where: { id: submissionId },
+                    data: {
+                        isApprovedByAdmin: false,
+                        isApprovedByCustomer: false,
+                    },
+                });
 
-            // Update assignee status
-            await tx.assignee.update({
-                where: { id: submission.assigneeId! },
-                data: {
-                    status: action,
-                },
-            });
+                // Update order status
+                await tx.order.update({
+                    where: { id: submission.orderId as any},
+                    data: {
+                        status: "IN_PRODUCTION",
+                    },
+                });
 
-            return updatedSubmission;
+                // Re-assign to the designer by creating a new assignee record
+                if (submission.Assignee?.userId) {
+                    await tx.assignee.create({
+                        data: {
+                            orderId: submission.orderId as any,
+                            userId: submission.Assignee.userId,
+                            status: DesignStatus.REVISION,
+                        },
+                    });
+                }
+
+                // Update previous assignee status
+                await tx.assignee.update({
+                    where: { id: submission.assigneeId as any },
+                    data: {
+                        status: DesignStatus.REVISION,
+                    },
+                });
+            } else {
+                // For other actions (APPROVED, PENDING)
+                await tx.designSubmission.update({
+                    where: { id: submissionId },
+                    data: {
+                        isApprovedByAdmin: action === DesignStatus.APPROVED,
+                    },
+                });
+
+                await tx.assignee.update({
+                    where: { id: submission.assigneeId as any },
+                    data: {
+                        status: action,
+                    },
+                });
+            }
+
+            return submission;
         });
 
         return NextResponse.json(updatedSubmission);
