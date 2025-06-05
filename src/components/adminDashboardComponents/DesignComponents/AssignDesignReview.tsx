@@ -2,14 +2,40 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DesignStatus } from "@prisma/client";
+import { DesignStatus, OrderStatus } from "@prisma/client";
 import { Check, X, RotateCcw, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 
+interface DesignSubmission {
+    id: string;
+    fileUrl: string;
+    comment: string;
+    isApprovedByAdmin: boolean;
+    isApprovedByCustomer: boolean;
+    createdAt: Date;
+}
+
+interface Assignee {
+    id: string;
+    status: DesignStatus;
+    user: {
+        name: string;
+    };
+}
+
+interface Submission {
+    id: string;
+    orderNumber: string;
+    itemDescription: string;
+    status: OrderStatus;
+    DesignSubmission: DesignSubmission[];
+    Assignee: Assignee[];
+}
+
 interface AdminDesignReviewProps {
-    submissions: any[];
+    submissions: Submission[];
 }
 
 export function AdminDesignReview({ submissions: initialSubmissions }: AdminDesignReviewProps) {
@@ -18,7 +44,6 @@ export function AdminDesignReview({ submissions: initialSubmissions }: AdminDesi
     const handleDesignAction = async (submissionId: string, action: DesignStatus) => {
         setActionInProgress(submissionId);
         try {
-            // Updated API endpoint path
             const response = await fetch(`/api/v1/designers`, {
                 method: 'POST',
                 headers: {
@@ -31,16 +56,43 @@ export function AdminDesignReview({ submissions: initialSubmissions }: AdminDesi
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || "Failed to process action");
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to process action");
             }
 
-            toast.success(`Design ${action.toLowerCase()} successfully`);
+            const data = await response.json();
+            
+            if (action === DesignStatus.REVISION) {
+                toast.success("Revision requested successfully");
+            } else if (action === DesignStatus.APPROVED) {
+                toast.success("Design approved successfully");
+            }
+
             window.location.reload();
         } catch (error) {
-            toast.error("Failed to process your request");
+            console.error("Action error:", error);
+            toast.error(error instanceof Error ? error.message : "Failed to process your request");
+        } finally {
             setActionInProgress(null);
         }
+    };
+
+    const getSubmissionStatus = (submission: Submission) => {
+        const assigneeStatus = submission.Assignee[0]?.status;
+        const isApprovedByAdmin = submission.DesignSubmission[0].isApprovedByAdmin;
+        const isRevision = assigneeStatus === DesignStatus.REVISION;
+        const isPending = assigneeStatus === DesignStatus.PENDING;
+        
+        // Don't show actions if admin has already approved
+        const canShowActions = !isApprovedByAdmin;
+
+        return {
+            isApprovedByAdmin,
+            isRevision,
+            isPending,
+            canShowActions,
+            status: assigneeStatus
+        };
     };
 
     return (
@@ -48,10 +100,7 @@ export function AdminDesignReview({ submissions: initialSubmissions }: AdminDesi
             {initialSubmissions.map((submission) => {
                 const submissionId = submission.DesignSubmission[0].id;
                 const isProcessing = actionInProgress === submissionId;
-                const isApproved = submission.DesignSubmission[0].isApprovedByAdmin;
-                const isRevision = submission.Assignee[0]?.status === DesignStatus.REVISION;
-                const isPending = submission.Assignee[0]?.status === DesignStatus.PENDING;
-                const isActioned = isApproved || isRevision || isPending;
+                const { isApprovedByAdmin, canShowActions, status } = getSubmissionStatus(submission);
 
                 return (
                     <Card key={submission.id}>
@@ -61,7 +110,7 @@ export function AdminDesignReview({ submissions: initialSubmissions }: AdminDesi
                                     Order #{submission.orderNumber}
                                 </CardTitle>
                                 <div className="flex items-center gap-2">
-                                    {!isActioned ? (
+                                    {canShowActions ? (
                                         <>
                                             <Button
                                                 variant="default"
@@ -106,9 +155,14 @@ export function AdminDesignReview({ submissions: initialSubmissions }: AdminDesi
                                             </Button>
                                         </>
                                     ) : (
-                                        <span className="text-sm font-medium px-3 py-1 rounded-full bg-muted">
-                                            Status: {submission.Assignee[0]?.status.toLowerCase()}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-medium px-3 py-1 rounded-full bg-green-100 text-green-700">
+                                                Approved by Admin
+                                            </span>
+                                            <span className="text-sm font-medium px-3 py-1 rounded-full bg-muted">
+                                                Pending Customer Review
+                                            </span>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -141,7 +195,7 @@ export function AdminDesignReview({ submissions: initialSubmissions }: AdminDesi
                                     <div>
                                         <h3 className="font-medium">Status</h3>
                                         <p className="text-sm text-muted-foreground">
-                                            {submission.Assignee[0]?.status}
+                                            {isApprovedByAdmin ? 'Approved by Admin' : status?.toLowerCase()}
                                         </p>
                                     </div>
                                     {submission.DesignSubmission[0]?.comment && (
@@ -156,8 +210,8 @@ export function AdminDesignReview({ submissions: initialSubmissions }: AdminDesi
                             </div>
                         </CardContent>
                     </Card>
-                )
+                );
             })}
         </div>
     );
-}   
+}

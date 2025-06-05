@@ -12,7 +12,7 @@ export interface Order {
     totalPrice: number;
     status: OrderStatus;
     productId: string | null;
-    attachment?: string;
+    attachment?: string | null; 
     Assignee?: {
         id: string;
         status: DesignStatus;

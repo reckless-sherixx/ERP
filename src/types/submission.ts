@@ -1,5 +1,22 @@
 import { DesignStatus, OrderStatus } from "@prisma/client";
 
+interface DesignSubmission {
+    id: string;
+    fileUrl: string;
+    comment: string;
+    isApprovedByAdmin: boolean;
+    isApprovedByCustomer: boolean;
+    createdAt: Date;
+}
+
+interface Assignee {
+    id: string;
+    status: DesignStatus;
+    user: {
+        name: string;  
+    };
+}
+
 export interface Submission {
     id: string;
     orderNumber: string;
@@ -8,22 +25,9 @@ export interface Submission {
     customerAddress: string;
     status: OrderStatus;
     createdAt: Date;
-    productId: string | null; 
+    productId: string | null;
     itemDescription: string;
     totalPrice: number;
-    Assignee: {
-        id: string;
-        status: DesignStatus;
-        user: {
-            name: string | null;
-        };
-    }[];
-    DesignSubmission: {
-        id: string;
-        fileUrl: string;
-        comment: string;
-        isApprovedByCustomer: boolean;
-        isApprovedByAdmin: boolean;
-        createdAt: Date;
-    }[];
+    Assignee: Assignee[];
+    DesignSubmission: DesignSubmission[];
 }

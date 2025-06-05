@@ -10,6 +10,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
+import { Order } from "@/types/order";
 import { Submission } from "@/types/submission";
 import { DesignStatus, Role } from "@prisma/client";
 import { redirect } from "next/navigation";
@@ -52,6 +53,7 @@ async function getData(userRole: Role) {
                 select: {
                     id: true,
                     status: true,
+                    userId: true, // Added userId
                     user: {
                         select: {
                             name: true,
@@ -67,15 +69,23 @@ async function getData(userRole: Role) {
     }) : [];
 
     // Fetch submissions based on role
-    const submissions = isAdminRole
-        ? await prisma.order.findMany({
-            where: {
-                DesignSubmission: {
-                    some: {
-                        isApprovedByAdmin: false
-                    }
+   const submissions = isAdminRole
+    ? await prisma.order.findMany({
+        where: {
+            DesignSubmission: {
+                some: {
+                    OR: [
+                        { isApprovedByAdmin: false },
+                        {
+                            isApprovedByAdmin: true,
+                            Assignee: {
+                                status: DesignStatus.REVISION
+                            }
+                        }
+                    ]
                 }
-            },
+            }
+        },
             select: {
                 id: true,
                 orderNumber: true,
@@ -99,9 +109,6 @@ async function getData(userRole: Role) {
                     }
                 },
                 DesignSubmission: {
-                    where: {
-                        isApprovedByAdmin: false
-                    },
                     select: {
                         id: true,
                         fileUrl: true,
@@ -172,7 +179,7 @@ async function getData(userRole: Role) {
         });
 
     return {
-        assignedTasks,
+        assignedTasks: assignedTasks as Order[],
         submissions: submissions as Submission[],
         isAdminRole
     };

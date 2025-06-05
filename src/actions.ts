@@ -344,50 +344,74 @@ interface SubmitWorkParams {
   isRevision?:boolean;
 }
 
-export async function submitDesignWork({ orderId, comment, fileUrl , isRevision }: SubmitWorkParams) {
-  try {
-    const session = await requireUser();
+export async function submitDesignWork({ orderId, comment, fileUrl, isRevision }: SubmitWorkParams) {
+    try {
+        const session = await requireUser();
 
-    // check if assignee exists
-    const assignee = await prisma.assignee.findFirst({
-      where: {
-        orderId: orderId,
-        userId: session.user.id,
-      },
-    });
-
-    if (!assignee) {
-      throw new Error("You are not assigned to this order");
-    }
-
-    // Create design submission with explicit type
-     const submission = await prisma.designSubmission.create({
-            data: {
-                fileUrl,
-                comment,
-                orderId,
-                isApprovedByAdmin: false,
-                isApprovedByCustomer: false,
+        const assignee = await prisma.assignee.findFirst({
+            where: {
+                orderId: orderId,
+                userId: session.user.id,
             },
         });
 
-        // If this is a revision, update the order and assignee status
-        if (isRevision) {
-            await prisma.$transaction([
-                prisma.order.update({
-                    where: { id: orderId },
-                    data: {
-                        status: "IN_PRODUCTION",
-                    },
-                }),
-                prisma.assignee.updateMany({
-                    where: { orderId },
-                    data: {
-                        status: "PENDING", 
-                    },
-                }),
-            ]);
+        if (!assignee) {
+            throw new Error("You are not assigned to this order");
         }
+
+        // Find existing submission for this order
+        const existingSubmission = await prisma.designSubmission.findFirst({
+            where: {
+                orderId,
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        const submission = await prisma.$transaction(async (tx) => {
+            if (existingSubmission && isRevision) {
+                // Update existing submission
+                return await tx.designSubmission.update({
+                    where: {
+                        id: existingSubmission.id
+                    },
+                    data: {
+                        fileUrl,
+                        comment,
+                        isApprovedByAdmin: false,
+                        isApprovedByCustomer: false,
+                    },
+                });
+            } else {
+                // Create new submission only if it's a first-time submission
+                return await tx.designSubmission.create({
+                    data: {
+                        fileUrl,
+                        comment,
+                        orderId,
+                        isApprovedByAdmin: false,
+                        isApprovedByCustomer: false,
+                    },
+                });
+            }
+        });
+
+        // Update order and assignee status
+        await prisma.$transaction([
+            prisma.order.update({
+                where: { id: orderId },
+                data: {
+                    status: "IN_PRODUCTION",
+                },
+            }),
+            prisma.assignee.update({
+                where: { id: assignee.id },
+                data: {
+                    status: "PENDING",
+                },
+            }),
+        ]);
 
         return submission;
     } catch (error) {

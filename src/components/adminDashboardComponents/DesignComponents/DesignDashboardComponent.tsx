@@ -5,11 +5,12 @@ import { DesignTabs } from "./DesignTabs";
 import { Submission } from "@/types/submission";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Order } from "@/types/order";
 
 interface DesignDashboardContentProps {
     isAdminRole: boolean;
     submissions: Submission[];
-    assignedTasks: any[];
+    assignedTasks: Order[];
 }
 
 export function DesignDashboardContent({ 

@@ -51,17 +51,39 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { submissionId, action } = body;
 
+        // First, fetch the submission with its related data
         const submission = await prisma.designSubmission.findUnique({
             where: { id: submissionId },
             include: {
-                Assignee: true,
                 Order: true,
+                Assignee: {
+                    include: {
+                        user: true
+                    }
+                },
             },
         });
 
-        if (!submission?.orderId || !submission?.assigneeId) {
+        if (!submission?.orderId) {
             return NextResponse.json(
                 { error: "Invalid submission data" },
+                { status: 400 }
+            );
+        }
+
+        // Find the current active assignee
+        const activeAssignee = await prisma.assignee.findFirst({
+            where: {
+                orderId: submission.orderId,
+                status: {
+                    in: [DesignStatus.PENDING, DesignStatus.REVISION, DesignStatus.APPROVED]
+                }
+            },
+        });
+
+        if (!activeAssignee?.id) {
+            return NextResponse.json(
+                { error: "No active assignee found for this submission" },
                 { status: 400 }
             );
         }
@@ -69,7 +91,7 @@ export async function POST(request: Request) {
         const updatedSubmission = await prisma.$transaction(async (tx) => {
             if (action === DesignStatus.REVISION) {
                 // Reset approvals
-                await tx.designSubmission.update({
+                const updatedDesign = await tx.designSubmission.update({
                     where: { id: submissionId },
                     data: {
                         isApprovedByAdmin: false,
@@ -78,46 +100,55 @@ export async function POST(request: Request) {
                 });
 
                 // Update order status
-                await tx.order.update({
+                const updatedOrder = await tx.order.update({
                     where: { id: submission.orderId as any},
                     data: {
                         status: "IN_PRODUCTION",
                     },
                 });
 
-                // Re-assign to the designer by creating a new assignee record
-                if (submission.Assignee?.userId) {
-                    await tx.assignee.create({
-                        data: {
-                            orderId: submission.orderId as any,
-                            userId: submission.Assignee.userId,
-                            status: DesignStatus.REVISION,
-                        },
-                    });
-                }
-
-                // Update previous assignee status
+                // Update assignee status
                 await tx.assignee.update({
-                    where: { id: submission.assigneeId as any },
+                    where: { id: activeAssignee.id },
                     data: {
                         status: DesignStatus.REVISION,
                     },
                 });
-            } else {
-                // For other actions (APPROVED, PENDING)
-                await tx.designSubmission.update({
+
+                return {
+                    ...updatedDesign,
+                    Order: updatedOrder,
+                };
+            } else if (action === DesignStatus.APPROVED) {
+                // Update for admin approval
+                const updatedDesign = await tx.designSubmission.update({
                     where: { id: submissionId },
                     data: {
-                        isApprovedByAdmin: action === DesignStatus.APPROVED,
+                        isApprovedByAdmin: true,
+                        isApprovedByCustomer: false,
                     },
                 });
 
-                await tx.assignee.update({
-                    where: { id: submission.assigneeId as any },
+                // Update order status
+                const updatedOrder = await tx.order.update({
+                    where: { id: submission.orderId as any },
                     data: {
-                        status: action,
+                        status: "IN_PRODUCTION",
                     },
                 });
+
+                // Update assignee status
+                await tx.assignee.update({
+                    where: { id: activeAssignee.id },
+                    data: {
+                        status: DesignStatus.APPROVED,
+                    },
+                });
+
+                return {
+                    ...updatedDesign,
+                    Order: updatedOrder,
+                };
             }
 
             return submission;
