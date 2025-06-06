@@ -12,7 +12,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { ItemCategory } from "@prisma/client";
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { SubmitButton } from "../../general/SubmitButton";
 import { addMaterial } from "../../../actions";
 import { useForm } from "@conform-to/react";

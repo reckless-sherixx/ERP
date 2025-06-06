@@ -5,7 +5,6 @@ import { requireUser } from "@/app/utils/hooks";
 import { Role } from "@prisma/client";
 
 async function getData(userId: string, userRole: Role) {
-    // Define the where clause based on user role
     const whereClause = userRole === Role.SYSTEM_ADMIN || userRole === Role.ADMIN
         ? {}
         : { 

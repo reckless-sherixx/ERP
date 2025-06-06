@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { auth, signOut } from "@/app/utils/auth";
+import { signOut } from "@/app/utils/auth";
 import Link from "next/link";
 import Logo from "../../../../../../public/logo.png";
 import Image from "next/image";

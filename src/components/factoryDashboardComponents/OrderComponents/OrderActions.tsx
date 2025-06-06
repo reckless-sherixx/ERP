@@ -10,8 +10,6 @@ import {
     CheckCircle,
     DownloadCloudIcon,
     MoreHorizontal,
-    Pencil,
-    Trash,
 } from "lucide-react";
 import Link from "next/link";
 

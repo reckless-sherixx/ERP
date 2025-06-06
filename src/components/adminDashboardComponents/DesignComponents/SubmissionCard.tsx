@@ -2,7 +2,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { OrderStatus } from "@prisma/client";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";

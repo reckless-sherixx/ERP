@@ -53,7 +53,7 @@ async function getData(userRole: Role) {
                 select: {
                     id: true,
                     status: true,
-                    userId: true, // Added userId
+                    userId: true, 
                     user: {
                         select: {
                             name: true,
@@ -120,7 +120,6 @@ async function getData(userRole: Role) {
                     orderBy: {
                         createdAt: 'desc'
                     },
-                    take: 1
                 }
             }
         })
@@ -170,7 +169,7 @@ async function getData(userRole: Role) {
                     orderBy: {
                         createdAt: 'desc'
                     },
-                    take: 1
+                    take: 1,
                 }
             },
             orderBy: {

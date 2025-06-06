@@ -53,7 +53,7 @@ export function NotificationComponent() {
                         session?.user?.role === Role.ADMIN;
   }, [session?.user?.role]);
 
-  // First useEffect for loading saved notifications
+  // for loading saved notifications
   useEffect(() => {
     if (!isAdminRef.current) {
       return;
@@ -69,7 +69,7 @@ export function NotificationComponent() {
     }
   }, []);
 
-  // Second useEffect for socket connection
+  // for socket connection
   useEffect(() => {
     if (!isConnected && isAdminRef.current) {
       console.log('Reconnecting socket for admin...');
@@ -77,7 +77,7 @@ export function NotificationComponent() {
     }
   }, [isConnected, reconnect]);
 
-  // Third useEffect for socket event handlers
+  // for socket event handlers
   useEffect(() => {
     if (!socket || !isConnected || !isAdminRef.current) {
       return;

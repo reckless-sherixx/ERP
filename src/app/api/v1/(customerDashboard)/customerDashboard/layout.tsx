@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { auth, signOut } from "@/app/utils/auth";
+import { signOut } from "@/app/utils/auth";
 import Link from "next/link";
 import Logo from "../../../../../../public/logo.png";
 import Image from "next/image";
@@ -11,13 +11,9 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Toaster } from "@/components/ui/sonner";
-import { hasAdminDashboardAccess } from "@/app/utils/dashboardAccess";
-import { redirect } from "next/navigation";
 import { Role } from "@prisma/client";
 import { NotificationComponent } from "@/components/general/Notification";
 import { requireUser } from "@/app/utils/hooks";

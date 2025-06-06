@@ -48,7 +48,7 @@ export default function OrderTracking() {
 
             const data = await response.json();
             setOrderDetails(data);
-        } catch (error) {
+        } catch  {
             toast.error("Could not find order with provided details");
         } finally {
             setLoading(false);
@@ -74,7 +74,7 @@ export default function OrderTracking() {
             toast.success(action === 'approve' ? "Design approved successfully" : "Revision requested successfully");
             // Refresh order details
             await handleTrackOrder(new Event('submit') as any);
-        } catch (error) {
+        } catch {
             toast.error("Failed to process your request");
             setActionInProgress(false); // Reset only on error
         }

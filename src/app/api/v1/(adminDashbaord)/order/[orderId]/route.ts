@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import jsPDF from "jspdf";
-import { formatCurrency } from "@/app/utils/formatCurrency";
 
 export async function GET(
     request: Request,

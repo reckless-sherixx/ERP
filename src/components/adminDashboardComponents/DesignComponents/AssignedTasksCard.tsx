@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, UserPlus } from "lucide-react";
 import { OrderDetailsDialog } from "../AssignTaskComponents/OrderDetailsDialog";
 import { Badge } from "@/components/ui/badge";
-import { DesignStatus, OrderStatus } from "@prisma/client";
+import { DesignStatus } from "@prisma/client";
 import { SubmitWorkDialog } from "./SubmitWorkDialog";
 import { Order } from "@/types/order";
 

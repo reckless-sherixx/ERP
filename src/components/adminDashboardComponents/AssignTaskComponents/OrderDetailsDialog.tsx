@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, FileText } from "lucide-react";
 import Link from "next/link";
-import { DesignStatus } from "@prisma/client";
 import { Order } from "@/types/order";
 
 interface OrderDetailsDialogProps {
