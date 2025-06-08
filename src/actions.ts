@@ -304,8 +304,8 @@ export async function addMaterial(prevState: any, formData: FormData) {
     return submission.reply();
   }
 
-  const materialCount = await prisma.inventoryItem.count();
-  const materialId = `MAT-${(materialCount + 1).toString().padStart(4, "0")}`;
+  const timeStamp = Date.now();
+  const materialId = `MAT-${timeStamp.toString().slice(-4)}`;
 
   //Determine stock status based on current stock and reorder stock
   const currentStock = submission.value.currentStock;

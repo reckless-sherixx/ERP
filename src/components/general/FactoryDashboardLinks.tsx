@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation"
 const roleBasedLinks: Record<string, Role[]> = {
     dashboard: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER],
     orders: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER, Role.PRODUCTION_STAFF],
-    staff: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER],
+    taskAssignment: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER],
     inventory: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER, Role.INVENTORY_MANAGER],
 };
 
@@ -37,10 +37,10 @@ export const dashboardLinks: DashboardLink[] = [
     },
     {
         id: 3,
-        name: 'Staff',
-        href: '/api/v1/factory/dashboard/staff',
+        name: 'Task Assignment',
+        href: '/api/v1/factory/dashboard/taskAssignment',
         icon: Users2,
-        roles: roleBasedLinks.staff,
+        roles: roleBasedLinks.taskAssignment,
     },
     {
         id: 1,

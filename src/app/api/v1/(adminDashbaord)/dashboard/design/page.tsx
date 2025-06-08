@@ -64,7 +64,6 @@ async function getData(userRole: Role) {
             createdAt: true,
             productId: true,
             itemDescription: true,
-            totalPrice: true,
         },
     }) : [];
 
@@ -144,7 +143,6 @@ async function getData(userRole: Role) {
                 createdAt: true,
                 productId: true,
                 itemDescription: true,
-                totalPrice: true,
                 attachment: true,
                 Assignee: {
                     select: {

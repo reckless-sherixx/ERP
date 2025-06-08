@@ -100,19 +100,20 @@ model User {
   address       String?
   emailVerified DateTime?
   image         String?
-  password      String? // optional for social logins
+  password      String?
   role          Role      @default(CUSTOMER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  attachments   Attachment[]
-  invoices      Invoice[]
-  Order         Order[]
-  InventoryItem InventoryItem[]
-  Assignee      Assignee[]
-  Notification  Notification[]
+  accounts       Account[]
+  sessions       Session[]
+  attachments    Attachment[]
+  invoices       Invoice[]
+  Order          Order[]
+  InventoryItem  InventoryItem[]
+  Assignee       Assignee[]
+  TaskAssignment TaskAssignment[]
+  Notification   Notification[]
 }
 
 model Order {
@@ -141,6 +142,7 @@ model Order {
   user             User?              @relation(fields: [userId], references: [id])
   userId           String?
   Assignee         Assignee[]
+  TaskAssignment   TaskAssignment[]
   DesignSubmission DesignSubmission[]
 }
 
@@ -227,18 +229,20 @@ model Notification {
 }
 
 model DesignSubmission {
-  id      String  @id @default(uuid())
-  comment String?
-  fileUrl String?
+  id                   String   @id @default(uuid())
+  comment              String?
+  fileUrl              String?
   isApprovedByCustomer Boolean? @default(false)
   isApprovedByAdmin    Boolean? @default(false)
 
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  Assignee   Assignee? @relation(fields: [assigneeId], references: [id])
-  assigneeId String?
-  Order      Order?    @relation(fields: [orderId], references: [id])
-  orderId    String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  Assignee         Assignee?       @relation(fields: [assigneeId], references: [id])
+  assigneeId       String?
+  Order            Order?          @relation(fields: [orderId], references: [id])
+  orderId          String?
+  TaskAssignment   TaskAssignment? @relation(fields: [taskAssignmentId], references: [id])
+  taskAssignmentId String?
 }
 
 model WorkStation {
@@ -250,9 +254,12 @@ model WorkStation {
 }
 
 model TaskAssignment {
-  id            String   @id @default(uuid())
-  orderId       String
-  workstationId String
-  assignedAt    DateTime @default(now())
-  status        String
+  id               String             @id @default(uuid())
+  orderId          String
+  assignedAt       DateTime           @default(now())
+  status           ProductionStatus
+  User             User?              @relation(fields: [userId], references: [id])
+  userId           String?
+  Order            Order              @relation(fields: [orderId], references: [id])
+  designSubmission DesignSubmission[]
 }

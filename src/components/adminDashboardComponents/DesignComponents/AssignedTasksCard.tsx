@@ -82,10 +82,7 @@ export function AssignedTasksCard({ initialData }: AssignedTasksCardProps) {
                                     </div>
 
                                     <div className="flex items-center justify-between mt-6">
-                                        <div className="text-lg font-bold">
-                                            ₹{order.totalPrice.toFixed(2)}
-                                        </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 ml-35 ">
                                             {canSubmit && (
                                                 <Button
                                                     variant={needsRevision ? "destructive" : "default"}

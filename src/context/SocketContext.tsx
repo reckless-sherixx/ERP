@@ -81,7 +81,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     if (socketInstance) {
       setSocket(socketInstance);
       
-      // If already connected, handle connection
+      // If already connected handle connection
       if (socketInstance.connected) {
         handleConnection(socketInstance);
       }

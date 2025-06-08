@@ -11,12 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, FileText } from "lucide-react";
 import Link from "next/link";
-import { Order } from "@/types/order";
+import { FactoryOrder } from "@/types/factoryOrder";
 
 interface OrderDetailsDialogProps {
-    isOpen: boolean;
-    onClose: () => void;
-    order: Order;
+  isOpen: boolean;
+  onClose: () => void;
+  order: FactoryOrder;
 }
 
 export function OrderDetailsDialog({
@@ -85,10 +85,10 @@ export function OrderDetailsDialog({
               <h3 className="text-sm font-semibold text-muted-foreground mb-2">
                 Assigned To
               </h3>
-              {order.Assignee && order.Assignee.length > 0 ? (
+              {order.TaskAssignment && order.TaskAssignment.length > 0 ? (
                 <div className="space-y-1">
                   <p className="text-sm font-medium">
-                    {order.Assignee[0].user.name}
+                    {order.TaskAssignment[0].user.name}
                   </p>
                 </div>
               ) : (
@@ -96,17 +96,20 @@ export function OrderDetailsDialog({
               )}
             </div>
             <div>
-              {order.attachment ? (
+              <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+                Design File
+              </h3>
+              {order.DesignSubmission && order.DesignSubmission.length > 0 ? (
                 <Button asChild size="sm" variant="outline">
-                  <Link href={order.attachment} target="_blank">
+                  <Link href={order.DesignSubmission[0].fileUrl || ''} target="_blank">
                     <FileText className="mr-1 h-4 w-4" />
-                    Attachment
+                    View Design
                   </Link>
                 </Button>
               ) : (
                 <Button size="sm" variant="outline" disabled>
                   <FileText className="mr-1 h-4 w-4" />
-                  No Attachment
+                  No Design File
                 </Button>
               )}
             </div>

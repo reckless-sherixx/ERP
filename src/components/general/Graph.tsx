@@ -7,14 +7,14 @@ import {
 } from "@/components/ui/chart";
 import { Line, LineChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 
-interface iAppProps {
+interface GraphProps {
     data: {
         date: string;
         amount: number;
     }[];
 }
 
-export function Graph({ data }: iAppProps) {
+export function Graph({ data }: GraphProps) {
     return (
         <ChartContainer
             config={{

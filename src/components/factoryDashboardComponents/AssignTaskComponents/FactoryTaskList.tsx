@@ -7,12 +7,9 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { prisma } from "@/lib/prisma";
-import { formatCurrency } from "@/app/utils/formatCurrency";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "../../general/EmptyState";
-import { TaskActions } from "./TaskActions";
-
-
+import { FactoryTaskActions } from "./FactoryTaskActions";
 
 async function getData() {
     const data = await prisma.order.findMany({
@@ -22,17 +19,27 @@ async function getData() {
             customerAddress: true,
             customerEmail: true,
             itemDescription: true,
-            totalPrice: true,
             createdAt: true,
             status: true,
             orderNumber: true,
-            productId: true, 
-            Assignee: {
+            productId: true,
+            productionStatus: true,
+            DesignSubmission: {
+                select: {
+                    id: true,
+                    fileUrl: true,
+                    isApprovedByAdmin: true,
+                    isApprovedByCustomer: true,
+                    createdAt: true,
+                    updatedAt: true
+                }
+            },
+            TaskAssignment: {
                 select: {
                     id: true,
                     status: true,
                     userId: true,
-                    user: {
+                    User: {
                         select: {
                             name: true,
                             email: true
@@ -48,7 +55,7 @@ async function getData() {
 
     return data;
 }
-export async function TaskList() {
+export async function FactoryTaskList() {
     const data = await getData();
     return (
         <>
@@ -66,7 +73,6 @@ export async function TaskList() {
                             <TableHead>Order ID</TableHead>
                             <TableHead>Customer</TableHead>
                             <TableHead>Items</TableHead>
-                            <TableHead>Amount</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Assigned To</TableHead>
                             <TableHead>Date</TableHead>
@@ -82,16 +88,10 @@ export async function TaskList() {
                                     ? `${order.itemDescription.slice(0, 10)}...`
                                     : order.itemDescription}</TableCell>
                                 <TableCell>
-                                    {formatCurrency({
-                                        amount: order.totalPrice,
-                                        currency: "INR",
-                                    })}
-                                </TableCell>
-                                <TableCell>
                                     <Badge>{order.status}</Badge>
                                 </TableCell>
                                 <TableCell>
-                                    {order.Assignee?.[0]?.user?.name || "Not Assigned"}
+                                    {order.TaskAssignment?.[0]?.User?.name || "Not Assigned"}
                                 </TableCell>
                                 <TableCell>
                                     {new Intl.DateTimeFormat("en-IN", {
@@ -100,7 +100,7 @@ export async function TaskList() {
                                     }).format(new Date(order.createdAt))}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <TaskActions
+                                    <FactoryTaskActions
                                         id={order.id}
                                         order={{
                                             id: order.id,
@@ -110,19 +110,27 @@ export async function TaskList() {
                                             customerAddress: order.customerAddress,
                                             createdAt: order.createdAt,
                                             itemDescription: order.itemDescription,
-                                            totalPrice: order.totalPrice,
-                                            status: order.status,
-                                            productId: order.productId, // Add this line
+                                            status: order.productionStatus,
+                                            productId: order.productId,
+                                            productionStatus: order.productionStatus,
                                             shippingAddress: order.customerAddress,
-                                            Assignee: order.Assignee.map(assignee => ({
-                                                id: assignee.id,
-                                                status: assignee.status,
-                                                userId: assignee.userId,
-                                                user: {
-                                                    name: assignee.user.name
-                                                }
+                                            DesignSubmission: order.DesignSubmission.map(design => ({
+                                                id: design.id,
+                                                fileUrl: design.fileUrl,
+                                                // Convert nullable booleans to non-nullable using Boolean()
+                                                isApprovedByAdmin: Boolean(design.isApprovedByAdmin),
+                                                isApprovedByCustomer: Boolean(design.isApprovedByCustomer)
                                             })),
-                                            isAssigned: order.Assignee.length > 0
+                                            TaskAssignment: order.TaskAssignment?.map(assignment => ({
+                                                id: assignment.id,
+                                                status: assignment.status,
+                                                userId: assignment.userId as string,
+                                                user: {
+                                                    name: assignment.User?.name ?? null
+                                                }
+                                            })) ?? [],
+                                            isAssigned: order.TaskAssignment.length > 0,
+                                            attachment: null
                                         }}
                                     />
                                 </TableCell>

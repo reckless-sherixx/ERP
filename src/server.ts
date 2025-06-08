@@ -19,7 +19,6 @@ const io = new Server(httpServer, {
   path: '/socket.io'
 });
 
-// Add middleware
 app.use(cors());
 app.use(express.json());
 

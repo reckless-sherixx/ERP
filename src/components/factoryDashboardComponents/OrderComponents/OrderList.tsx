@@ -9,7 +9,6 @@ import {
 import { OrderActions } from "./OrderActions";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/app/utils/hooks";
-import { formatCurrency } from "@/app/utils/formatCurrency";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "../../general/EmptyState";
 import { Role } from "@prisma/client";
@@ -17,6 +16,14 @@ import { Role } from "@prisma/client";
 async function getData(userId: string, userRole: Role) {
     if (userRole === Role.SYSTEM_ADMIN || userRole === Role.FACTORY_MANAGER) {
         return await prisma.order.findMany({
+            where:{
+                DesignSubmission:{
+                    some:{
+                        isApprovedByAdmin:true,
+                        isApprovedByCustomer:true,
+                    }
+                }
+            },
             select: {
                 id: true,
                 customerName: true,
@@ -39,7 +46,6 @@ async function getData(userId: string, userRole: Role) {
         select: {
             id: true,
             customerName: true,
-            totalPrice: true,
             createdAt: true,
             status: true,
             orderNumber: true,
@@ -75,7 +81,6 @@ export async function OrderList() {
                             <TableHead>Production Status</TableHead>
                             <TableHead>Order Date</TableHead>
                             <TableHead>Est. Delivery Date</TableHead>
-                            <TableHead>Amount</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -103,12 +108,6 @@ export async function OrderList() {
                                             dateStyle: "medium",
                                         }).format(new Date(order.estimatedDelivery))
                                         : "N/A"}
-                                </TableCell>
-                                <TableCell>
-                                    {formatCurrency({
-                                        amount: order.totalPrice,
-                                        currency: "INR",
-                                    })}
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <OrderActions id={order.id} />

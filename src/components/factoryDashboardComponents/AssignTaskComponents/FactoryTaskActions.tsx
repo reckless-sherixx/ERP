@@ -14,18 +14,15 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { OrderDetailsDialog } from "./OrderDetailsDialog";
-import { AssignOrderDialog } from "./AssignOrderDialog";
-import { Order } from "@/types/order";
+import { FactoryAssignOrderDialog } from "./FactoryAssignOrderDialog";
+import { FactoryOrder } from "@/types/factoryOrder";
 
-interface TaskActionsProps {
+interface FactoryTaskActionsProps {
     id: string;
-    order: Order & {
-        isAssigned: boolean;
-    }
-};
+    order: FactoryOrder;
+}
 
-
-export function TaskActions({ id, order }: TaskActionsProps) {
+export function FactoryTaskActions({ id, order }: FactoryTaskActionsProps) {
     const [showViewDialog, setShowViewDialog] = useState(false);
     const [showAssignDialog, setShowAssignDialog] = useState(false);
 
@@ -54,7 +51,7 @@ export function TaskActions({ id, order }: TaskActionsProps) {
                 order={order}
             />
 
-            <AssignOrderDialog
+            <FactoryAssignOrderDialog
                 isOpen={showAssignDialog}
                 onClose={() => setShowAssignDialog(false)}
                 orderId={id}

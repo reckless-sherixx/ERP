@@ -81,16 +81,16 @@ export default async function DashboardLayout({
                                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild>
-                                        <Link href="/api/v1/dashboard">Dashboard</Link>
+                                        <Link href="/api/v1/factory/dashboard">Dashboard</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/api/v1/dashboard/orders">Orders</Link>
+                                        <Link href="/api/v1/factory/dashboard/orders">Orders</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/api/v1/dashboard/Users">Users</Link>
+                                        <Link href="/api/v1/factory/dashboard/Users">Users</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
-                                        <Link href="/api/v1/dashboard/invoices">Invoices</Link>
+                                        <Link href="/api/v1/factory/dashboard/inventory">Inventory</Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem asChild>
