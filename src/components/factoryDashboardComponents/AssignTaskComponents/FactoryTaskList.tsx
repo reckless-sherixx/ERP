@@ -13,6 +13,14 @@ import { FactoryTaskActions } from "./FactoryTaskActions";
 
 async function getData() {
     const data = await prisma.order.findMany({
+        where:{
+            DesignSubmission: {
+                some: {
+                    isApprovedByAdmin: true,
+                    isApprovedByCustomer: true
+                }
+            },
+        },
         select: {
             id: true,
             customerName: true,
@@ -117,7 +125,6 @@ export async function FactoryTaskList() {
                                             DesignSubmission: order.DesignSubmission.map(design => ({
                                                 id: design.id,
                                                 fileUrl: design.fileUrl,
-                                                // Convert nullable booleans to non-nullable using Boolean()
                                                 isApprovedByAdmin: Boolean(design.isApprovedByAdmin),
                                                 isApprovedByCustomer: Boolean(design.isApprovedByCustomer)
                                             })),

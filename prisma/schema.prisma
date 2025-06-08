@@ -46,6 +46,7 @@ enum InventoryStockStatus {
 }
 
 enum ProductionStatus {
+  PENDING
   ASSEMBLY
   CUTTING
   FINISHING
@@ -134,10 +135,8 @@ model Order {
   estimatedDelivery    DateTime?
   note                 String?
   attachment           String?
-  isApprovedByCustomer Boolean?         @default(false)
-  isApprovedByAdmin    Boolean?         @default(false)
   isAssigned           Boolean?         @default(false)
-  productionStatus     ProductionStatus @default(CUTTING)
+  productionStatus     ProductionStatus @default(PENDING)
 
   user             User?              @relation(fields: [userId], references: [id])
   userId           String?

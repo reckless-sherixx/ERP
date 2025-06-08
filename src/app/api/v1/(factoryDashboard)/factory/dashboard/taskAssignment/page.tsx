@@ -18,7 +18,8 @@ async function getData() {
                     isApprovedByCustomer: true
                 }
             },
-            isAssigned: true
+            isAssigned: false,
+            productionStatus: "PENDING"
         },
         select: {
             id: true,
@@ -104,7 +105,7 @@ export default async function TaskAssignmentPage() {
                 <FactoryTaskAssignment initialData={data} />
                 <Card className="border border-black/20 shadow-lg">
                     <CardHeader>
-                        <CardTitle className="text-2xl font-bold">Orders ({`${data.length}`})</CardTitle>
+                        <CardTitle className="text-2xl font-bold">Orders</CardTitle>
                         <CardDescription>Manage and assign customer orders</CardDescription>
                     </CardHeader>
                     <CardContent>

@@ -1,15 +1,16 @@
 "use client"
 import { cn } from "@/lib/utils"
 import { Role } from "@prisma/client"
-import { HomeIcon, NotebookText, ShoppingCart, Users2 } from "lucide-react"
+import { HomeIcon, NotebookText, PersonStanding, ShoppingCart, Users2 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const roleBasedLinks: Record<string, Role[]> = {
     dashboard: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER],
-    orders: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER, Role.PRODUCTION_STAFF],
+    orders: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER],
     taskAssignment: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER],
     inventory: [Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER, Role.INVENTORY_MANAGER],
+    production:[Role.SYSTEM_ADMIN, Role.FACTORY_MANAGER, Role.PRODUCTION_STAFF],
 };
 
 interface DashboardLink {
@@ -48,6 +49,13 @@ export const dashboardLinks: DashboardLink[] = [
         href: '/api/v1/factory/dashboard/inventory',
         icon: ShoppingCart,
         roles: roleBasedLinks.inventory,
+    },
+    {
+        id: 5,
+        name: 'Production',
+        href: '/api/v1/factory/dashboard/production',
+        icon: PersonStanding,
+        roles: roleBasedLinks.production,
     },
 ] as const ;
 

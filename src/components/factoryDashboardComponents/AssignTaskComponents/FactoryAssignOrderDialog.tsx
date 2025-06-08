@@ -62,37 +62,38 @@ export function FactoryAssignOrderDialog({
     }, [isOpen]);
 
     const handleAssign = async () => {
-        if (!selectedStaff) {
-            toast.error("Please select a production staff member");
-            return;
+    if (!selectedStaff) {
+        toast.error("Please select a production staff member");
+        return;
+    }
+
+    try {
+        setIsLoading(true);
+        const response = await fetch(`/api/v1/factory/dashboard/orders/${orderId}/assignStaff`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                userId: selectedStaff
+            }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Failed to assign order");
         }
 
-        try {
-            setIsLoading(true);
-            const response = await fetch(`/api/v1/factory/dashboard/orders/${orderId}/assignStaff`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    userId: selectedStaff
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to assign order");
-            }
-
-            toast.success("Order assigned successfully");
-            router.refresh();
-            onClose();
-        } catch (error) {
-            toast.error("Failed to assign order");
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+        toast.success("Order assigned successfully");
+        router.refresh(); 
+        onClose();
+    } catch (error) {
+        toast.error("Failed to assign order");
+        console.error(error);
+    } finally {
+        setIsLoading(false);
+    }
+};
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>

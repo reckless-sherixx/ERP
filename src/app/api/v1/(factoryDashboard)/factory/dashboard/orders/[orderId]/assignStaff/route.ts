@@ -27,7 +27,8 @@ export async function POST(
                         isApprovedByAdmin: true,
                         isApprovedByCustomer: true
                     }
-                }
+                },
+                isAssigned:false
             }
         });
 
@@ -43,7 +44,7 @@ export async function POST(
                 data: {
                     orderId,
                     userId,
-                    status: "CUTTING"
+                    status: "PENDING"
                 }
             }),
             prisma.order.update({

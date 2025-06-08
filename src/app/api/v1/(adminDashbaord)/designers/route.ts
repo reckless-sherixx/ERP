@@ -120,7 +120,6 @@ export async function POST(request: Request) {
                     Order: updatedOrder,
                 };
             } else if (action === DesignStatus.APPROVED) {
-                // Update for admin approval
                 const updatedDesign = await tx.designSubmission.update({
                     where: { id: submissionId },
                     data: {
@@ -134,6 +133,8 @@ export async function POST(request: Request) {
                     where: { id: submission.orderId as any },
                     data: {
                         status: "IN_PRODUCTION",
+                        isAssigned:false,
+                        productionStatus:"PENDING"
                     },
                 });
 
