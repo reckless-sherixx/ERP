@@ -4,67 +4,65 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
-        const orderNumber = searchParams.get("orderNumber");
-        const email = searchParams.get("email");
+        const orderNumber = searchParams.get('orderNumber');
+        const email = searchParams.get('email');
 
         if (!orderNumber || !email) {
-            return NextResponse.json(
-                { error: "Order number and email are required" },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
         }
 
         const order = await prisma.order.findFirst({
             where: {
                 orderNumber: orderNumber,
-                customerEmail: email,
+                customerEmail: email
             },
             select: {
                 id: true,
                 orderNumber: true,
                 status: true,
+                productionStatus: true,
                 customerName: true,
                 customerEmail: true,
                 itemDescription: true,
                 totalPrice: true,
                 createdAt: true,
                 DesignSubmission: {
+                    where: {
+                        isApprovedByAdmin: true
+                    },
                     select: {
                         id: true,
                         fileUrl: true,
                         comment: true,
+                        isApprovedByCustomer: true,
                         isApprovedByAdmin: true,
-                        isApprovedByCustomer: true, 
-                        createdAt: true,
-                    },
-                    orderBy: {
-                        createdAt: 'desc'
-                    },
-                    where: {
-                        isApprovedByAdmin: true // Only fetch admin-approved submissions
+                        createdAt: true
                     }
                 },
-                Assignee: {
+                TaskAssignment: {
                     select: {
-                        status: true
+                        OrderSubmission: {
+                            select: {
+                                id: true,
+                                fileUrl: true,
+                                createdAt: true
+                            },
+                            orderBy: {
+                                createdAt: 'asc'
+                            }
+                        }
                     }
                 }
-            },
+            }
         });
 
         if (!order) {
-            return NextResponse.json(
-                { error: "Order not found" },
-                { status: 404 }
-            );
+            return NextResponse.json({ error: "Order not found" }, { status: 404 });
         }
 
         return NextResponse.json(order);
     } catch (error) {
-        console.error("Error fetching order:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch order details" },
-            { status: 500 }
-        );
+        console.error('Error tracking order:', error);
+        return NextResponse.json({ error: "Failed to track order" }, { status: 500 });
     }
 }

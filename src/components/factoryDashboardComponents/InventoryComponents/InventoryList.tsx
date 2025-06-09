@@ -88,7 +88,18 @@ export async function InventoryList() {
                                     }).format(new Date(item.createdAt))}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <InventoryActions status={item.stockStatus} id={item.id} />
+                                    <InventoryActions 
+                                        status={item.stockStatus} 
+                                        id={item.id}
+                                        item={{
+                                            materialName: item.materialName,
+                                            currentStock: item.currentStock,
+                                            reorderPoint: item.reorderPoint,
+                                            unit: item.unit,
+                                            supplier: item.supplier,
+                                            category: item.category
+                                        }}
+                                    />
                                 </TableCell>
                             </TableRow>
                         ))}

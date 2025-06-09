@@ -65,6 +65,7 @@ export const updateRoleSchema = z.object({
 //Inventory Schema
 
 export const inventorySchema = z.object({
+    id: z.string().optional(),
     materialName: z.string().min(1, "Material name is required"),
     category:z.enum(["WOOD", "VENEERS", "HARDWARE","FINISHES","TOOLS"]),
     unit: z.string().min(1, "Unit of measurement is required"),

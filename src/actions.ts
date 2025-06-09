@@ -336,6 +336,49 @@ export async function addMaterial(prevState: any, formData: FormData) {
   return redirect("/api/v1/factory/dashboard/inventory");
 }
 
+export async function editMaterial(prevState: any, formData: FormData) {
+  const session = await requireUser();
+
+  const submission = parseWithZod(formData, {
+    schema: inventorySchema,
+  });
+
+  if (submission.status !== "success") {
+    return submission.reply();
+  }
+
+  //Determine stock status based on current stock and reorder stock
+  const currentStock = submission.value.currentStock;
+  const reorderPoint = submission.value.reorderPoint;
+  let stockStatus;
+
+  if (currentStock === 0) {
+    stockStatus = InventoryStockStatus.OUT_OF_STOCK;
+  } else if (currentStock <= reorderPoint) {
+    stockStatus = InventoryStockStatus.LOW_STOCK;
+  } else {
+    stockStatus = InventoryStockStatus.IN_STOCK;
+  }
+
+  await prisma.inventoryItem.update({
+    where: {
+      id: formData.get("id") as string,
+      userId: session.user?.id,
+    },
+    data: {
+      materialName: submission.value.materialName,
+      currentStock: submission.value.currentStock,
+      reorderPoint: submission.value.reorderPoint,
+      unit: submission.value.unit,
+      supplier: submission.value.supplier,
+      stockStatus,
+      category: submission.value.category,
+    },
+  });
+  return redirect("/api/v1/factory/dashboard/inventory");
+}
+
+
 // Submit work actions
 interface SubmitWorkParams {
   orderId: string;

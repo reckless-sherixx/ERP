@@ -18,7 +18,6 @@ async function getData() {
                     isApprovedByCustomer: true
                 }
             },
-            isAssigned: false,
             productionStatus: "PENDING"
         },
         select: {
@@ -32,6 +31,7 @@ async function getData() {
             orderNumber: true,
             productId: true,
             productionStatus: true,
+            isAssigned: true,
             TaskAssignment: {
                 select: {
                     id: true,
@@ -73,6 +73,7 @@ async function getData() {
         status: order.status, 
         productionStatus: order.productionStatus,
         productId: order.productId,
+        isAssigned: order.isAssigned ?? false,
         DesignSubmission: order.DesignSubmission.map(design => ({
             id: design.id,
             fileUrl: design.fileUrl,
