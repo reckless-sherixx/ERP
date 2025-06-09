@@ -83,9 +83,19 @@ async function getData() {
         })
     ]);
 
+    const mappedProduction: ProductionSubmission[] = productionData.map(order => ({
+        ...order,
+        TaskAssignment: order.TaskAssignment.map(task => ({
+            ...task,
+            User: task.User || null,
+            OrderSubmission: task.OrderSubmission || []
+        })),
+        DesignSubmission: order.DesignSubmission || []
+    }));
+
     return {
         data: {
-            production: productionData,
+            production: mappedProduction,
             inventory: inventoryData
         },
         userId: session.user.id

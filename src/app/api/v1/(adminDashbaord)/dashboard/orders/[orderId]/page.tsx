@@ -16,7 +16,7 @@ async function getData(orderId: string, userId: string) {
     }
     return data;
 }
-export default async function ({ params }: { params: Promise<{ orderId: string }> }) {
+export default async function OrderPage({ params }: { params: Promise<{ orderId: string }> }) {
     const { orderId } = await params;
     const session = await requireUser();
 

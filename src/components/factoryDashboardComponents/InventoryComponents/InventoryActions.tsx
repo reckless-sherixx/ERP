@@ -7,10 +7,10 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EyeIcon, MoreHorizontal, Pencil } from "lucide-react";
+import { MoreHorizontal, Pencil } from "lucide-react";
 import { useState } from "react";
 import { EditMaterialDialog } from "./EditMaterialDialog";
-import { InventoryStockStatus } from "@prisma/client";
+import { InventoryStockStatus, ItemCategory } from "@prisma/client";
 
 interface InventoryActionsProps {
     id: string;
@@ -21,7 +21,7 @@ interface InventoryActionsProps {
         reorderPoint: number;
         unit: string;
         supplier: string;
-        category: string;
+        category: ItemCategory;
     };
 }
 

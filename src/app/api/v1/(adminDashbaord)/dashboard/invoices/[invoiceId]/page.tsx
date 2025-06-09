@@ -18,7 +18,7 @@ async function getData(invoiceId: string, userId: string) {
     return data;
 }
 
-export default async function ({ params }: { params: Promise<{ invoiceId: string }> }) {
+export default async function InvoicePage({ params }: { params: Promise<{ invoiceId: string }> }) {
     const { invoiceId } = await params;
     const session = await auth();
     

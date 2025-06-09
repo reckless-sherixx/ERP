@@ -88,11 +88,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }
 
     return () => {
-      if (socket) {
-        socket.off('connect');
-        socket.off('disconnect');
-        socket.off('reconnect');
-      }
+      if (socketInstance) {
+      socketInstance.off('connect');
+      socketInstance.off('disconnect');
+      socketInstance.off('reconnect');
+    }
     };
   }, [status, initSocket, handleConnection]);
 

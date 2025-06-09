@@ -13,9 +13,7 @@ import {
   Legend
 } from 'chart.js';
 import { Users, Clock, Scissors, Wrench, CheckCircle, AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
-import { format } from "date-fns";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { prisma } from "@/lib/prisma";
+import { InventoryStockStatus } from "@prisma/client";
 
 ChartJS.register(
   CategoryScale,
@@ -37,7 +35,7 @@ interface ProductionOverviewProps {
 
 export function ProductionOverview({ data, inventoryData, userId }: ProductionOverviewProps) {
   // Sort orders by creation date to get most recent first
-  const recentOrders = [...data]
+  [...data]
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, 5);
 

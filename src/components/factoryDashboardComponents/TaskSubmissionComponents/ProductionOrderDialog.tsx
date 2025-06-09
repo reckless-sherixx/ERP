@@ -45,6 +45,11 @@ export function ProductionOrderDialog({
     }
   };
 
+  // Get the current task assignment and user safely
+  const currentTask = order.TaskAssignment?.[0];
+  const assignedUser = currentTask?.User;
+  const latestSubmission = currentTask?.OrderSubmission?.[0];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
@@ -98,10 +103,10 @@ export function ProductionOrderDialog({
                 {isAdmin ? "Assigned To" : "Design Files"}
               </h3>
               {isAdmin ? (
-                order.TaskAssignment && order.TaskAssignment.length > 0 ? (
+                currentTask ? (
                   <div className="space-y-1">
                     <p className="text-sm font-medium">
-                      {order.TaskAssignment[0].User.name}
+                      {assignedUser?.name ?? "No name provided"}
                     </p>
                   </div>
                 ) : (
@@ -110,7 +115,7 @@ export function ProductionOrderDialog({
               ) : (
                 <Button asChild size="sm" variant="outline">
                   <Link
-                    href={order.DesignSubmission?.[0]?.fileUrl || ""}
+                    href={order.DesignSubmission?.[0]?.fileUrl ?? "#"}
                     target="_blank"
                     className={
                       !order.DesignSubmission?.[0]?.fileUrl
@@ -128,7 +133,7 @@ export function ProductionOrderDialog({
               <h3 className="text-sm font-semibold text-muted-foreground mb-2">
                 Progress
               </h3>
-              <div className="relative pt-2"> 
+              <div className="relative pt-2">
                 <div className="overflow-hidden h-2 text-xs flex bg-secondary rounded-full">
                   <div
                     style={{
@@ -153,13 +158,16 @@ export function ProductionOrderDialog({
                 {isAdmin ? "Latest Submission" : "Your Submissions"}
               </h3>
               {isAdmin ? (
-                order.TaskAssignment?.[0]?.OrderSubmission?.[0] ? (
+                latestSubmission ? (
                   <Button asChild size="sm" variant="outline">
                     <Link
-                      href={
-                        order.TaskAssignment[0].OrderSubmission[0].fileUrl || ""
-                      }
+                      href={latestSubmission.fileUrl ?? "#"}
                       target="_blank"
+                      className={
+                        !latestSubmission.fileUrl
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
                     >
                       <FileText className="mr-1 h-4 w-4" />
                       View Work
@@ -168,32 +176,35 @@ export function ProductionOrderDialog({
                 ) : (
                   <p className="text-sm">No submissions yet</p>
                 )
-              ) : // Staff view - Show their own latest submission
-              order.TaskAssignment?.[0]?.OrderSubmission?.[0] ? (
+              ) : latestSubmission ? (
                 <Button asChild size="sm" variant="outline">
                   <Link
-                    href={
-                      order.TaskAssignment[0].OrderSubmission[0].fileUrl || ""
-                    }
+                    href={latestSubmission.fileUrl ?? "#"}
                     target="_blank"
+                    className={
+                      !latestSubmission.fileUrl
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                    }
                   >
                     <FileText className="mr-1 h-4 w-4" />
                     View Your Latest Work
                   </Link>
                 </Button>
               ) : (
-                <p className="text-sm">You haven't submitted any work yet</p>
+                <p className="text-sm">You haven&apos;t submitted any work yet</p>
               )}
             </div>
           </div>
 
+          {/* Submission History */}
           {isAdmin && (
             <div>
               <h3 className="text-sm font-semibold text-muted-foreground mb-2">
                 Submission History
               </h3>
               <div className="space-y-2">
-                {order.TaskAssignment?.[0]?.OrderSubmission?.map(
+                {currentTask?.OrderSubmission?.map(
                   (submission) => (
                     <div
                       key={submission.id}
@@ -206,7 +217,15 @@ export function ProductionOrderDialog({
                         </p>
                       </div>
                       <Button asChild size="sm" variant="outline">
-                        <Link href={submission.fileUrl || ""} target="_blank">
+                        <Link
+                          href={submission.fileUrl ?? "#"}
+                          target="_blank"
+                          className={
+                            !submission.fileUrl
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          }
+                        >
                           <FileText className="mr-1 h-4 w-4" />
                           View
                         </Link>

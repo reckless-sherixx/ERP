@@ -12,11 +12,11 @@ import { RecentOrders } from "@/components/adminDashboardComponents/OrderCompone
 import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
 
-interface PageProps {
+interface DashboardPageProps {
     searchParams: { view?: string }
 }
 
-export default async function DashboardRoute({ searchParams }: PageProps) {
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
     const session = await requireUser();
 
     // Redirect designers directly to design dashboard
