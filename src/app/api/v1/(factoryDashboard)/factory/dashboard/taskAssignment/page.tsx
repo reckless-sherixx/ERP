@@ -68,12 +68,11 @@ async function getData() {
         customerName: order.customerName,
         customerEmail: order.customerEmail,
         customerAddress: order.customerAddress,
-        shippingAddress: order.customerAddress,
         createdAt: order.createdAt,
         itemDescription: order.itemDescription,
-        status: order.productionStatus,
-        productId: order.productId,
+        status: order.status, 
         productionStatus: order.productionStatus,
+        productId: order.productId,
         DesignSubmission: order.DesignSubmission.map(design => ({
             id: design.id,
             fileUrl: design.fileUrl,
@@ -81,11 +80,13 @@ async function getData() {
             isApprovedByCustomer: true
         })),
         TaskAssignment: order.TaskAssignment?.map(assignment => ({
-            user: {
+            id: assignment.id,
+            status: assignment.status,
+            userId: assignment.userId ?? "",
+            User: {
                 name: assignment.User?.name ?? null
             }
         })) ?? [],
-        isAssigned: false,
         attachment: null
     }));
 }

@@ -38,4 +38,8 @@ export function accessDesignDashboard(role?:string):boolean{
     const allowedRoles = ['SYSTEM_ADMIN', 'ADMIN', 'DESIGN'];
     return role ? allowedRoles.includes(role) : false;
 }
+export function accessStaffDashboard(role?:string):boolean{
+    const allowedRoles = ['SYSTEM_ADMIN', 'FACTORY_MANAGER', 'PRODUCTION_STAFF'];
+    return role ? allowedRoles.includes(role) : false;
+}
 

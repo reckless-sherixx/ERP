@@ -1,4 +1,4 @@
-import { ProductionStatus } from "@prisma/client";
+import { OrderStatus, ProductionStatus } from "@prisma/client";
 
 export interface FactoryOrder {
     id: string;
@@ -6,23 +6,30 @@ export interface FactoryOrder {
     customerName: string;
     customerEmail: string | null;
     customerAddress: string;
-    shippingAddress?: string | null;
     createdAt: Date;
     itemDescription: string;
-    status: ProductionStatus;
-    productId: string | null;
+    status: OrderStatus;
     productionStatus: ProductionStatus;
+    productId: string | null;
     attachment?: string | null;
+    isAssigned:boolean;
     TaskAssignment?: {
-        user: {
+        id: string;
+        status: ProductionStatus;
+        userId: string;
+        User: {
             name: string | null;
         };
     }[];
-    DesignSubmission: {
+    OrderSubmission?: {
+        id: string;
+        fileUrl: string | null;
+        createdAt: Date;
+    }[];
+    DesignSubmission?: {
         id: string;
         fileUrl: string | null;
         isApprovedByAdmin: boolean;
         isApprovedByCustomer: boolean;
     }[];
-    isAssigned: boolean;
 }

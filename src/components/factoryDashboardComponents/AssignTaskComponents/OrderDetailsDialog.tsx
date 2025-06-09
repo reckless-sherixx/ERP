@@ -62,12 +62,12 @@ export function OrderDetailsDialog({
             </div>
           </div>
 
-          {order.shippingAddress && (
+          {order.customerAddress && (
             <div>
               <h3 className="text-sm font-semibold text-muted-foreground mb-2">
                 Shipping Address
               </h3>
-              <p className="text-sm">{order.shippingAddress}</p>
+              <p className="text-sm">{order.customerAddress}</p>
             </div>
           )}
 
@@ -85,10 +85,10 @@ export function OrderDetailsDialog({
               <h3 className="text-sm font-semibold text-muted-foreground mb-2">
                 Assigned To
               </h3>
-              {order.TaskAssignment && order.TaskAssignment.length > 0 ? (
+              {order.TaskAssignment?.[0]?.User?.name ? (
                 <div className="space-y-1">
                   <p className="text-sm font-medium">
-                    {order.TaskAssignment[0].user.name}
+                    {order.TaskAssignment[0].User.name}
                   </p>
                 </div>
               ) : (
@@ -99,9 +99,9 @@ export function OrderDetailsDialog({
               <h3 className="text-sm font-semibold text-muted-foreground mb-2">
                 Design File
               </h3>
-              {order.DesignSubmission && order.DesignSubmission.length > 0 ? (
+              {order.DesignSubmission?.[0]?.fileUrl ? (
                 <Button asChild size="sm" variant="outline">
-                  <Link href={order.DesignSubmission[0].fileUrl || ''} target="_blank">
+                  <Link href={order.DesignSubmission[0].fileUrl} target="_blank">
                     <FileText className="mr-1 h-4 w-4" />
                     View Design
                   </Link>

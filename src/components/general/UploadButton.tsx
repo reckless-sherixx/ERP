@@ -10,9 +10,10 @@ import { OurFileRouter } from "@/app/api/uploadthing/core";
 interface UploadButtonProps {
     onChange: (url?: string) => void;
     value?: string;
+    disabled?: boolean;
 }
 
-export function UploadButton({ onChange, value }: UploadButtonProps) {
+export function UploadButton({ onChange, value, disabled }: UploadButtonProps) {
     if (value) {
         return (
             <div className="flex flex-col gap-2">
@@ -28,6 +29,7 @@ export function UploadButton({ onChange, value }: UploadButtonProps) {
                         onClick={() => onChange(undefined)}
                         variant="destructive"
                         size="sm"
+                        disabled={disabled}
                         className="absolute -top-2 -right-2 h-6 w-6 rounded-md "
                     >
                         <X className="h-3 w-3" />
@@ -41,6 +43,7 @@ export function UploadButton({ onChange, value }: UploadButtonProps) {
         <div className="flex flex-col gap-2">
             <UploadDropzone<OurFileRouter, "imageUploader">
                 endpoint="imageUploader"
+                disabled={disabled}
                 onClientUploadComplete={(res) => {
                     if (res?.[0]) {
                         onChange(res[0].ufsUrl);

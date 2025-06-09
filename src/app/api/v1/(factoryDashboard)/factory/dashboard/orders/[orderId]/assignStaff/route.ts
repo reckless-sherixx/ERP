@@ -52,7 +52,7 @@ export async function POST(
                 data: {
                     isAssigned: true,
                     status: "IN_PRODUCTION",
-                    productionStatus: "CUTTING"
+                    productionStatus: "PENDING"
                 }
             })
         ]);

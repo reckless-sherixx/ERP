@@ -1,7 +1,4 @@
-import { accessDesignDashboard } from "@/app/utils/dashboardAccess";
-import { requireUser } from "@/app/utils/hooks";
-import { ProductionDashboardBlocks } from "@/components/factoryDashboardComponents/TaskSubmissionComponents/ProductionDashboardBlocks";
-import { ProductionDashboardContent } from "@/components/factoryDashboardComponents/TaskSubmissionComponents/ProductionDashboardComponent";
+import { ProductionTaskList } from "@/components/factoryDashboardComponents/TaskSubmissionComponents/ProductionTaskList";
 import {
     Card,
     CardContent,
@@ -10,36 +7,39 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
-import { Order } from "@/types/order";
-import { Submission } from "@/types/submission";
-import { DesignStatus, Role } from "@prisma/client";
-import { redirect } from "next/navigation";
+import { ProductionSubmission } from "@/types/ProductionSubmission";
+import { requireUser } from "@/app/utils/hooks";
+import { ProductionTabs } from "@/components/factoryDashboardComponents/TaskSubmissionComponents/DesignTabs";
 
-    
-async function getData(userRole: Role) {
+async function getData() {
     const session = await requireUser();
-    const userId = session.user.id;
-    const isAdminRole = userRole === Role.SYSTEM_ADMIN || userRole === Role.FACTORY_MANAGER;
+    
+    if (!session?.user?.id) {
+        throw new Error("Unauthorized");
+    }
 
-    // Fetch assigned tasks (for designers only)
-    const assignedTasks = !isAdminRole ? await prisma.order.findMany({
-        where: {
-            Assignee: {
+    const isAdmin = ["SYSTEM_ADMIN", "FACTORY_MANAGER"].includes(session.user.role);
+
+    const data = await prisma.order.findMany({
+        where: isAdmin ? {
+            // Admin sees all tasks with submissions
+            TaskAssignment: {
                 some: {
-                    userId: userId,
-                    OR: [
-                        {
-                            status: DesignStatus.PENDING
-                        },
-                        {
-                            status: DesignStatus.REVISION
-                        }
-                    ]
+                    status: {
+                        in: ["PENDING", "CUTTING", "ASSEMBLY", "FINISHING"]
+                    }
                 }
-            },
-            status: {
-                in: ["PENDING", "IN_PRODUCTION"]
-            },
+            }
+        } : {
+            // Staff sees only their assigned tasks
+            TaskAssignment: {
+                some: {
+                    userId: session.user.id,
+                    status: {
+                        in: ["PENDING", "CUTTING", "ASSEMBLY", "FINISHING"]
+                    }
+                }
+            }
         },
         select: {
             id: true,
@@ -47,177 +47,77 @@ async function getData(userRole: Role) {
             customerName: true,
             customerEmail: true,
             customerAddress: true,
-            attachment: true,
             status: true,
-            Assignee: {
-                select: {
-                    id: true,
-                    status: true,
-                    userId: true, 
-                    user: {
-                        select: {
-                            name: true,
-                        }
-                    }
-                }
-            },
+            productionStatus: true,
             createdAt: true,
             productId: true,
             itemDescription: true,
-        },
-    }) : [];
-
-    // Fetch submissions based on role
-   const submissions = isAdminRole
-    ? await prisma.order.findMany({
-        where: {
+            totalPrice: true,
+            TaskAssignment: {
+                select: {
+                    id: true,
+                    status: true,
+                    userId: true,
+                    User: {
+                        select: {
+                            name: true
+                        }
+                    },
+                    OrderSubmission: {
+                        select: {
+                            id: true,
+                            fileUrl: true,
+                            createdAt: true
+                        }
+                    }
+                }
+            },
             DesignSubmission: {
-                some: {
-                    OR: [
-                        { isApprovedByAdmin: false },
-                        {
-                            isApprovedByAdmin: true,
-                            Assignee: {
-                                status: DesignStatus.REVISION
-                            }
-                        }
-                    ]
+                select: {
+                    id: true,
+                    fileUrl: true,
+                    isApprovedByAdmin: true,
+                    isApprovedByCustomer: true
                 }
             }
         },
-            select: {
-                id: true,
-                orderNumber: true,
-                customerName: true,
-                customerEmail: true,
-                customerAddress: true,
-                status: true,
-                createdAt: true,
-                productId: true,
-                itemDescription: true,
-                totalPrice: true,
-                Assignee: {
-                    select: {
-                        id: true,
-                        status: true,
-                        user: {
-                            select: {
-                                name: true
-                            }
-                        }
-                    }
-                },
-                DesignSubmission: {
-                    select: {
-                        id: true,
-                        fileUrl: true,
-                        comment: true,
-                        isApprovedByAdmin: true,
-                        isApprovedByCustomer: true,
-                        createdAt: true
-                    },
-                    orderBy: {
-                        createdAt: 'desc'
-                    },
-                }
-            }
-        })
-        : await prisma.order.findMany({
-            where: {
-                Assignee: {
-                    some: {
-                        userId: userId
-                    }
-                },
-                DesignSubmission: {
-                    some: {}
-                }
-            },
-            select: {
-                id: true,
-                orderNumber: true,
-                customerName: true,
-                customerEmail: true,
-                customerAddress: true,
-                status: true,
-                createdAt: true,
-                productId: true,
-                itemDescription: true,
-                attachment: true,
-                Assignee: {
-                    select: {
-                        id: true,
-                        status: true,
-                        user: {
-                            select: {
-                                name: true,
-                            }
-                        }
-                    }
-                },
-                DesignSubmission: {
-                    select: {
-                        id: true,
-                        fileUrl: true,
-                        comment: true,
-                        isApprovedByAdmin: true,
-                        isApprovedByCustomer: true,
-                        createdAt: true,
-                    },
-                    orderBy: {
-                        createdAt: 'desc'
-                    },
-                    take: 1,
-                }
-            },
-            orderBy: {
-                createdAt: 'desc'
-            }
-        });
+        orderBy: {
+            createdAt: "desc"
+        }
+    });
 
     return {
-        assignedTasks: assignedTasks as Order[],
-        submissions: submissions as Submission[],
-        isAdminRole
+        data: data as ProductionSubmission[],
+        isAdmin,
+        userId: session.user.id
     };
 }
 
 export default async function ProductionPage() {
-    const session = await requireUser();
-    if (!accessDesignDashboard(session.user?.role)) {
-        redirect('/api/v1/dashboard')
+    const { data, isAdmin, userId } = await getData();
+    
+    if (!userId) {
+        throw new Error("User Id is required");
     }
-    const data = await getData(session.user?.role as Role);
-    const isAdminRole = session.user?.role === Role.SYSTEM_ADMIN || session.user?.role === Role.ADMIN;
-
     return (
-        <>
-            <div className="space-y-6">
-                <ProductionDashboardBlocks />
-            </div>
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="text-2xl font-bold">
-                                {isAdminRole ? "Design Submissions Review" : "My Design Tasks"}
-                            </CardTitle>
-                            <CardDescription>
-                                {isAdminRole
-                                    ? "Review and manage design submissions"
-                                    : "Manage your assigned tasks and submissions"}
-                            </CardDescription>
-                        </div>
+        <Card className="border border-black/20 shadow-lg">
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <CardTitle className="text-2xl font-bold">Production Tasks</CardTitle>
+                        <CardDescription>
+                            {isAdmin ? "Manage all production tasks" : "Manage your assigned tasks"}
+                        </CardDescription>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <ProductionDashboardContent
-                        isAdminRole={isAdminRole}
-                        submissions={data.submissions}
-                        assignedTasks={data.assignedTasks}
-                    />
-                </CardContent>
-            </Card>
-        </>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <ProductionTabs 
+                    initialData={data} 
+                    isAdmin={isAdmin}
+                    userId={userId}
+                />
+            </CardContent>
+        </Card>
     );
 }

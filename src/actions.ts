@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { emailClient } from "./app/utils/mailtrap";
 import { formatCurrency } from "./app/utils/formatCurrency";
-import { InventoryStockStatus } from "@prisma/client";
+import { InventoryStockStatus, ProductionStatus } from "@prisma/client";
 import { createOrderNotification } from "./app/utils/notifcationService";
 
 //Invoice Actions
@@ -339,7 +339,7 @@ export async function addMaterial(prevState: any, formData: FormData) {
 // Submit work actions
 interface SubmitWorkParams {
   orderId: string;
-  comment: string;
+  comment?: string
   fileUrl: string;
   isRevision?:boolean;
 }
@@ -371,7 +371,6 @@ export async function submitDesignWork({ orderId, comment, fileUrl, isRevision }
 
         const submission = await prisma.$transaction(async (tx) => {
             if (existingSubmission && isRevision) {
-                // Update existing submission
                 return await tx.designSubmission.update({
                     where: {
                         id: existingSubmission.id
@@ -384,7 +383,6 @@ export async function submitDesignWork({ orderId, comment, fileUrl, isRevision }
                     },
                 });
             } else {
-                // Create new submission only if it's a first-time submission
                 return await tx.designSubmission.create({
                     data: {
                         fileUrl,
@@ -417,5 +415,81 @@ export async function submitDesignWork({ orderId, comment, fileUrl, isRevision }
     } catch (error) {
         console.error('Error submitting design work:', error);
         throw new Error('Failed to submit design work');
+    }
+}
+
+
+export async function submitOrderWork({ orderId, fileUrl }: SubmitWorkParams) {
+    try {
+        const session = await requireUser();
+
+        const taskAssignment = await prisma.taskAssignment.findFirst({
+            where: {
+                orderId: orderId,
+                userId: session.user.id,
+            },
+            include: {
+                OrderSubmission: true
+            }
+        });
+
+        if (!taskAssignment) {
+            throw new Error("You are not assigned to this order");
+        }
+
+        const submissionCount = taskAssignment.OrderSubmission?.length || 0;
+
+        // Check if max submissions reached
+        if (submissionCount >= 3) {
+            throw new Error("Maximum submissions reached");
+        }
+
+        const result = await prisma.$transaction([
+            prisma.orderSubmission.create({
+                data: {
+                    fileUrl,
+                    orderId,
+                    taskAssignmentId: taskAssignment.id
+                }
+            }),
+
+            // Update task assignment status
+            prisma.taskAssignment.update({
+                where: { id: taskAssignment.id },
+                data: {
+                    status: getNextStatus(submissionCount)
+                }
+            }),
+
+            // Update order status
+            prisma.order.update({
+                where: { id: orderId },
+                data: {
+                    productionStatus: getNextStatus(submissionCount),
+                    ...(submissionCount === 2 && {
+                        status: "COMPLETED"
+                    })
+                }
+            })
+        ]);
+
+        return result[0]; 
+    } catch (error) {
+        console.error('Error submitting production work:', error);
+        throw new Error('Failed to submit production work');
+    }
+}
+
+// Helper function to determine next status
+function getNextStatus(submissionCount: number): ProductionStatus {
+    switch (submissionCount) {
+        case 0: // First submission 
+            return "CUTTING";
+        case 1: // Second submission
+            return "ASSEMBLY";
+        case 2: // Third submission
+            return "FINISHING";
+        default:
+            return "PENDING";
     }
 }
