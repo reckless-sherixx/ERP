@@ -20,10 +20,10 @@ import { parseWithZod } from "@conform-to/zod";
 import { orderSchema } from "@/app/utils/zodSchemas";
 import { editOrder } from '@/actions';
 import { formatCurrency } from "@/app/utils/formatCurrency";
-import { Prisma } from "@prisma/client";
+import { Order } from "@prisma/client";
 
 interface EditOrderProps {
-    data: Prisma.OrderGetPayload<{}>;//get order data from prisma
+    data: Order;//get order data from prisma
 }
 
 export function EditOrder({ data }: EditOrderProps) {

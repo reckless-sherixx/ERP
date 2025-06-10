@@ -1,4 +1,3 @@
-import { ProductionTaskList } from "@/components/factoryDashboardComponents/TaskSubmissionComponents/ProductionTaskList";
 import {
     Card,
     CardContent,

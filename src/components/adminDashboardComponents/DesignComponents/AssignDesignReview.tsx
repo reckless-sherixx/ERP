@@ -59,8 +59,6 @@ export function AdminDesignReview({ submissions: initialSubmissions }: AdminDesi
                 const errorData = await response.json();
                 throw new Error(errorData.error || "Failed to process action");
             }
-
-            const data = await response.json();
             
             if (action === DesignStatus.REVISION) {
                 toast.success("Revision requested successfully");

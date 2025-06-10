@@ -1,11 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/app/utils/hooks";
 import { FactoryOrderDisplay } from "@/components/factoryDashboardComponents/FactoryOrderDisplay/FactoryOrderDisplay";
 import { ProductionSubmission } from "@/types/ProductionSubmission";
+import { auth } from "@/app/utils/auth";
+import { redirect } from "next/navigation";
 
 async function getData() {
-    const session = await requireUser();
-    
     const data = await prisma.order.findMany({
         where: {
             TaskAssignment: {
@@ -92,6 +91,10 @@ async function getData() {
 }
 
 export default async function FactoryDisplay() {
+    const session = await auth();
+    if(!session){
+        redirect('/login')
+    }
     const orders = await getData();
 
     return (

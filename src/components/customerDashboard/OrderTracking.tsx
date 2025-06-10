@@ -104,6 +104,8 @@ export default function OrderTracking() {
           : "Revision requested successfully"
       );
       // Refresh order details
+      
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await handleTrackOrder(new Event("submit") as any);
     } catch {
       toast.error("Failed to process your request");

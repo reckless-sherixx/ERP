@@ -1,15 +1,6 @@
-import { ProductionTaskList } from "@/components/factoryDashboardComponents/TaskSubmissionComponents/ProductionTaskList";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
 import { ProductionSubmission } from "@/types/ProductionSubmission";
 import { requireUser } from "@/app/utils/hooks";
-import { ProductionTabs } from "@/components/factoryDashboardComponents/TaskSubmissionComponents/DesignTabs";
 import { ProductionOverview } from "@/components/factoryDashboardComponents/FactoryDashboardComponents/ProductionOverview";
 import { redirect } from "next/navigation";
 import { hasFactoryDashboardAccess } from "@/app/utils/dashboardAccess";

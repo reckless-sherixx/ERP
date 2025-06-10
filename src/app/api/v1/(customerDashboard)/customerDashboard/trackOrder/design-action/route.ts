@@ -90,7 +90,7 @@ export async function POST(request: Request) {
 
                 // Update order status
                 await tx.order.update({
-                    where: { id: submission.orderId as any },
+                    where: { id: submission.orderId! },
                     data: {
                         status: "IN_PRODUCTION",
                     },
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
                 // Update assignee status
                 await tx.assignee.updateMany({
                     where: { 
-                        orderId: submission.orderId as any,
+                        orderId: submission.orderId!,
                         status: {
                             in: [DesignStatus.PENDING, DesignStatus.APPROVED]
                         }
@@ -119,7 +119,7 @@ export async function POST(request: Request) {
                 });
 
                 await tx.order.update({
-                    where: { id: submission.orderId as any },
+                    where: { id: submission.orderId!},
                     data: {
                         status: "IN_PRODUCTION",
                     },

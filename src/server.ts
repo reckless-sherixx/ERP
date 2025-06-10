@@ -97,7 +97,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// Update the notify endpoint to include more data
 app.post('/notify', (req, res) => {
   try {
     const { event, data } = req.body;
@@ -111,7 +110,6 @@ app.post('/notify', (req, res) => {
     console.log(`Active admin clients: ${roomSize}`);
     
     if (roomSize > 0) {
-      // Include timestamp in the notification
       const notificationData = {
         ...data,
         timestamp: new Date().toISOString(),

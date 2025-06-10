@@ -101,7 +101,7 @@ export async function POST(request: Request) {
 
                 // Update order status
                 const updatedOrder = await tx.order.update({
-                    where: { id: submission.orderId as any},
+                    where: { id: submission.orderId!},
                     data: {
                         status: "IN_PRODUCTION",
                     },
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
 
                 // Update order status
                 const updatedOrder = await tx.order.update({
-                    where: { id: submission.orderId as any },
+                    where: { id: submission.orderId!},
                     data: {
                         status: "IN_PRODUCTION",
                         isAssigned:false,

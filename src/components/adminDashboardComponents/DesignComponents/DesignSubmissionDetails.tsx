@@ -72,7 +72,7 @@ export function DesignSubmissionDetails({
             const filename = `design-${order.orderNumber}-${new Date().getTime()}.${extension}`;
             await downloadFile(latestSubmission.fileUrl, filename);
             toast.success('File downloaded successfully');
-        } catch (error) {
+        } catch{
             toast.error("Failed to download file");
         } finally {
             setIsDownloading(false);
