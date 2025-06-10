@@ -5,9 +5,11 @@ import { canEditInAdminDashboard } from "@/app/utils/dashboardAccess";
 import { auth } from "@/app/utils/auth";
 import { updateRoleSchema } from "@/app/utils/zodSchemas";
 
+type Params = Promise<{ userId: string }>;
+
 export async function PATCH(
     request: Request,
-    { params }: { params: { userId: string } }
+    { params }: { params: Params }
 ) {
     try {
         const session = await auth();
@@ -18,6 +20,8 @@ export async function PATCH(
                 { status: 401 }
             );
         }
+
+        const {userId} = await params;
 
         // Parse and validate the request body
         const body = await request.json();
@@ -35,7 +39,7 @@ export async function PATCH(
 
         // Check if user exists
         const targetUser = await prisma.user.findUnique({
-            where: { id: params.userId }
+            where: { id: userId }
         });
 
         if (!targetUser) {
@@ -63,7 +67,7 @@ export async function PATCH(
 
         // Update the user role
         const updatedUser = await prisma.user.update({
-            where: { id: params.userId },
+            where: { id: userId },
             data: { role },
             select: {
                 id: true,

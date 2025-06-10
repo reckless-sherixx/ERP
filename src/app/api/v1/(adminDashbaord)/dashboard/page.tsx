@@ -13,7 +13,7 @@ import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 interface DashboardPageProps {
-    searchParams: { view?: string }
+    searchParams: Promise<{ view?: string }>
 }
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
@@ -65,9 +65,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
                 {view === "factory" && (
                     <div className="grid gap-4">
-                        {/* Add factory dashboard components */}
                         <h2 className="text-2xl font-bold">Factory Dashboard</h2>
-                        {/* Add factory-specific metrics and graphs */}
                     </div>
                 )}
             </Suspense>

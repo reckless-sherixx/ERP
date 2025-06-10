@@ -363,9 +363,9 @@ Our ERP system is powered by a modern, enterprise-grade technology stack designe
   - Resource allocation
   - Progress reporting
 
-### 🖼 **Screenshots**
+<!-- ### 🖼 **Screenshots**
 
-> 📸 *Screenshots will be added as features are developed*
+> 📸 *Screenshots will be added as features are developed* -->
 
 ---
 
@@ -380,11 +380,25 @@ Create a `.env.local` file in the root directory:
 DATABASE_URL="your_database_connection_string"
 
 # Authentication
-NEXTAUTH_SECRET="your_nextauth_secret"
-NEXTAUTH_URL="http://localhost:3000"
+AUTH_SECRET="your_nextauth_secret"
+
+# Database URL
+DATABASE_URL="your_postgres_database_url"
+
+#Oauth
+AUTH_GOOGLE_ID="google_id"
+AUTH_GOOGLE_SECRET="secret_key"
 
 # API Keys
+UPLOADTHING_TOKEN="your_uploadthing_token"
+MAILTRAP_TOKEN="your_mailtrap_token"
+
+#API Endpoints
 NEXT_PUBLIC_API_URL="your_api_endpoint"
+NEXT_PUBLIC_SOCKET_URL="your_socket_url"
+
+#Port
+SOCKET_PORT="your_socket_port"
 
 # Email Service (optional)
 EMAIL_SERVER_HOST="your_smtp_host"

@@ -63,6 +63,7 @@ async function getData() {
 
     return data;
 }
+
 export async function FactoryTaskList() {
     const data = await getData();
     return (
@@ -118,10 +119,9 @@ export async function FactoryTaskList() {
                                             customerAddress: order.customerAddress,
                                             createdAt: order.createdAt,
                                             itemDescription: order.itemDescription,
-                                            status: order.productionStatus,
+                                            status: order.status, 
                                             productId: order.productId,
                                             productionStatus: order.productionStatus,
-                                            shippingAddress: order.customerAddress,
                                             DesignSubmission: order.DesignSubmission.map(design => ({
                                                 id: design.id,
                                                 fileUrl: design.fileUrl,
@@ -132,7 +132,7 @@ export async function FactoryTaskList() {
                                                 id: assignment.id,
                                                 status: assignment.status,
                                                 userId: assignment.userId as string,
-                                                user: {
+                                                User: {
                                                     name: assignment.User?.name ?? null
                                                 }
                                             })) ?? [],

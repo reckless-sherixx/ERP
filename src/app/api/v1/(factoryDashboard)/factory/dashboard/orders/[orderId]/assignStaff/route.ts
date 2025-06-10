@@ -2,9 +2,10 @@ import { requireUser } from "@/app/utils/hooks";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+type Params = Promise<{ orderId: string }>;
 export async function POST(
     request: Request,
-    { params }: { params: { orderId: string } }
+    { params }: { params: Params }
 ) {
     try {
         const session = await requireUser();
@@ -17,7 +18,7 @@ export async function POST(
         }
 
         const { userId } = await request.json();
-        const { orderId } = params;
+        const { orderId } = await params;
 
         const existingOrder = await prisma.order.findFirst({
             where: {

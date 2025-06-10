@@ -103,7 +103,7 @@ export function FactoryOrderDisplay({ orders }: FactoryOrderDisplayProps) {
               <div className="border-t border-border pt-2 space-y-1.5">
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="h-4 w-4 shrink-0" />
-                  <span className="truncate">Created At: {new Date(order.createdAt).toLocaleString()}</span>
+                  <span className="truncate">Ordered At: {new Date(order.createdAt).toLocaleString()}</span>
                 </div>
               </div>
             </div>

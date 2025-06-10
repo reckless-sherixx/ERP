@@ -1,13 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+type Params = Promise<{ orderId: string }>;
 export async function POST(
     request: Request,
-    { params }: { params: { orderId: string } }
+    { params }: { params: Params }
 ) {
     try {
         const { userId } = await request.json();
-        const { orderId } = params;
+        const { orderId } = await params;
 
         // Check if order exists
         const existingOrder = await prisma.order.findUnique({
