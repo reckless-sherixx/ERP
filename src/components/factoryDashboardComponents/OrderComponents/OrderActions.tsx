@@ -31,7 +31,7 @@ export function OrderActions({ id}: OrderActionsProps) {
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                    <Link href={`/api/v1/dashboard/invoices/${id}/assign`}>
+                    <Link href={`/api/v1/factory/dashboard/taskAssignment`}>
                         <CheckCircle className="size-4 mr-2" /> Assign Order
                     </Link>
                 </DropdownMenuItem>
